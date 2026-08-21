@@ -1,0 +1,40 @@
+name: 问题反馈
+description: 报告可以复现的问题，请勿上传真实财务资料或密钥
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 请先确认示例中不含真实公司、客户、个人、Token 或 API Key。
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 使用环境
+      options:
+        - DeepSeek Harness 图形工作台
+        - WorkBuddy Skill
+        - Codex Skill
+        - Claude Skill
+        - 其他 Agent
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: 请使用虚构文件名和虚构数据描述
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果与实际结果
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      placeholder: v2.0.0
+    validations:
+      required: true

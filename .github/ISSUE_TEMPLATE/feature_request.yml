@@ -1,0 +1,17 @@
+name: 功能建议
+description: 建议新的财务场景或体验改进
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 要解决的问题
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: 建议的输入、规则、输出和人工复核点
+    validations:
+      required: true

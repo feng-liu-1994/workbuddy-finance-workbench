@@ -1,0 +1,3 @@
+- insert:
+    - id: finance-workbench
+      name: 'dsh-finance-workbench'
