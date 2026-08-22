@@ -17,8 +17,9 @@ test('todo normalization and close progress remain deterministic', () => {
 })
 
 test('backup round trip validates product, version and required collections', () => {
-  const backup = buildFinanceBackup({ profile: {}, todos: [], closeTasks: [], favorites: [], fieldDictionary: [], settings: {} })
+  const backup = buildFinanceBackup({ profile: {}, todos: [], closeTasks: [], favorites: [], fieldDictionary: [], settings: {}, theme: 'sand' })
   assert.equal(parseFinanceBackup(JSON.stringify(backup)).product, 'dsh-finance-workbench')
+  assert.equal(backup.theme, 'sand')
   assert.throws(() => parseFinanceBackup('{"product":"other","version":2}'), /不是有效/)
   assert.throws(() => parseFinanceBackup({ product: 'dsh-finance-workbench', version: 2, todos: [] }), /内容不完整/)
 })

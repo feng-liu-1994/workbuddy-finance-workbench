@@ -45,7 +45,9 @@ cd workbuddy-finance-workbench
 
 - 页面能正常打开，浏览器控制台没有财务工作台相关错误。
 - 左侧出现“财务工作台”。
+- 顶部可以切换 4 套主题，刷新页面后仍保留选择。
 - 首页显示 25 个专业工作流。
+- 首页“今日财务节奏”能显示待办、月结和经营数据完整度。
 - 待办可新增、完成和恢复。
 - 财务资料库可搜索、筛选、引用和下载。
 - 月结清单可勾选并计算完成度。
@@ -75,10 +77,10 @@ package.json.finance-workbench-backup-20260821-120000
 
 ## 从 GitHub Release 安装
 
-Releases 提供 `dsh-finance-workbench-2.1.0.tgz`。这是构建完成的 npm 安装包，适合不想在目标机器编译源码的用户。下载后可在 profile 目录安装：
+Releases 提供 `dsh-finance-workbench-2.2.0.tgz`。这是构建完成的 npm 安装包，适合不想在目标机器编译源码的用户。下载后可在 profile 目录安装：
 
 ```bash
-pnpm add /下载目录/dsh-finance-workbench-2.1.0.tgz
+pnpm add /下载目录/dsh-finance-workbench-2.2.0.tgz
 ```
 
 还需要确认 profile 的 `dsh.profile.bundles` 中包含 `dsh-finance-workbench`。新手建议优先使用一键安装脚本。

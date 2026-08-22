@@ -59,6 +59,7 @@ export function buildFinanceBackup(state) {
     settings: state.settings,
     snapshots: Array.isArray(state.snapshots) ? state.snapshots : [],
     auditLog: Array.isArray(state.auditLog) ? state.auditLog : [],
+    theme: String(state.theme || 'indigo'),
   }
 }
 
