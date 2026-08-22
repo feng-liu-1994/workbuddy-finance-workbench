@@ -75,10 +75,10 @@ package.json.finance-workbench-backup-20260821-120000
 
 ## 从 GitHub Release 安装
 
-Releases 提供 `dsh-finance-workbench-2.0.0.tgz`。这是构建完成的 npm 安装包，适合不想在目标机器编译源码的用户。下载后可在 profile 目录安装：
+Releases 提供 `dsh-finance-workbench-2.1.0.tgz`。这是构建完成的 npm 安装包，适合不想在目标机器编译源码的用户。下载后可在 profile 目录安装：
 
 ```bash
-pnpm add /下载目录/dsh-finance-workbench-2.0.0.tgz
+pnpm add /下载目录/dsh-finance-workbench-2.1.0.tgz
 ```
 
 还需要确认 profile 的 `dsh.profile.bundles` 中包含 `dsh-finance-workbench`。新手建议优先使用一键安装脚本。

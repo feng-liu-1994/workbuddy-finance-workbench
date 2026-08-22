@@ -57,6 +57,8 @@ export function buildFinanceBackup(state) {
     favorites: state.favorites,
     fieldDictionary: state.fieldDictionary,
     settings: state.settings,
+    snapshots: Array.isArray(state.snapshots) ? state.snapshots : [],
+    auditLog: Array.isArray(state.auditLog) ? state.auditLog : [],
   }
 }
 
@@ -65,6 +67,28 @@ export function parseFinanceBackup(value) {
   if (!data || data.product !== 'dsh-finance-workbench' || Number(data.version) !== 2) throw new Error('不是有效的财务工作台 v2 备份')
   if (!Array.isArray(data.todos) || !Array.isArray(data.closeTasks) || !Array.isArray(data.favorites) || !Array.isArray(data.fieldDictionary)) throw new Error('财务工作台备份内容不完整')
   return data
+}
+
+export function emptyFinanceSnapshot(period = localDateKey().slice(0, 7)) {
+  return { period, income: '', expense: '', cash: '', receivable: '', payable: '', budget: '', note: '' }
+}
+
+export function snapshotProfit(snapshot) {
+  const income = Number(snapshot?.income)
+  const expense = Number(snapshot?.expense)
+  if (snapshot?.income === '' || snapshot?.expense === '' || !Number.isFinite(income) || !Number.isFinite(expense)) return null
+  return income - expense
+}
+
+export function normalizeFinanceSnapshot(snapshot, fallbackPeriod = localDateKey().slice(0, 7)) {
+  const result = emptyFinanceSnapshot(/^\d{4}-\d{2}$/.test(String(snapshot?.period || '')) ? String(snapshot.period) : fallbackPeriod)
+  for (const key of ['income', 'expense', 'cash', 'receivable', 'payable', 'budget']) {
+    if (snapshot?.[key] === '' || snapshot?.[key] === null || snapshot?.[key] === undefined) continue
+    const value = Number(snapshot[key])
+    result[key] = Number.isFinite(value) && value >= 0 ? value : ''
+  }
+  result.note = String(snapshot?.note || '').trim().slice(0, 300)
+  return result
 }
 
 export function workflowsForView(workflows, view) {

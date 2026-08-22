@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildFinanceBackup, closeProgress, dueLabel, greetingFor, localDateKey, normalizeTodo, parseFinanceBackup, shiftDate, workflowsForView } from '../src/finance-dashboard-helpers.js'
+import { buildFinanceBackup, closeProgress, dueLabel, emptyFinanceSnapshot, greetingFor, localDateKey, normalizeFinanceSnapshot, normalizeTodo, parseFinanceBackup, shiftDate, snapshotProfit, workflowsForView } from '../src/finance-dashboard-helpers.js'
 
 test('date helpers use local dates and stable due labels', () => {
   const date = new Date(2026, 7, 21, 9, 0, 0)
@@ -21,6 +21,16 @@ test('backup round trip validates product, version and required collections', ()
   assert.equal(parseFinanceBackup(JSON.stringify(backup)).product, 'dsh-finance-workbench')
   assert.throws(() => parseFinanceBackup('{"product":"other","version":2}'), /不是有效/)
   assert.throws(() => parseFinanceBackup({ product: 'dsh-finance-workbench', version: 2, todos: [] }), /内容不完整/)
+})
+
+test('finance snapshots normalize numbers and calculate profit safely', () => {
+  assert.deepEqual(emptyFinanceSnapshot('2026-08'), { period: '2026-08', income: '', expense: '', cash: '', receivable: '', payable: '', budget: '', note: '' })
+  const snapshot = normalizeFinanceSnapshot({ period: '2026-08', income: '1540000', expense: 980000, cash: -1, note: '  已复核  ' })
+  assert.equal(snapshot.income, 1540000)
+  assert.equal(snapshot.cash, '')
+  assert.equal(snapshot.note, '已复核')
+  assert.equal(snapshotProfit(snapshot), 560000)
+  assert.equal(snapshotProfit({ income: '', expense: 10 }), null)
 })
 
 test('module routing exposes focused finance workflows', () => {
