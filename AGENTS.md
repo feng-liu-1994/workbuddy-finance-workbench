@@ -1,6 +1,6 @@
 # AI Agent 开发说明
 
-本仓库同时提供 DeepSeek Harness UI 插件和通用财务 Agent Skill。
+本仓库同时提供 WorkBuddy MCP App、DeepSeek Harness UI 插件和通用财务 Agent Skill。
 
 ## 修改原则
 

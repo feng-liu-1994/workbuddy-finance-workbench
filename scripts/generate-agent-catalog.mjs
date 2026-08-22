@@ -7,7 +7,7 @@ await mkdir(root, { recursive: true })
 const catalog = {
   product: 'workbuddy-finance-workbench',
   version: 2,
-  productVersion: '2.3.0',
+  productVersion: '2.4.0',
   generatedAt: '2026-08-22',
   sopSteps: SOP_STEPS.map(([number, title, note]) => ({ number, title, note })),
   workflows: FINANCE_WORKFLOWS,

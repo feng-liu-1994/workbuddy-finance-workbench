@@ -7,6 +7,8 @@ test('public package contains beginner docs and agent artifacts', async () => {
     'README.md',
     'docs/INSTALL_DSH.md',
     'docs/INSTALL_AGENT.md',
+    'docs/INSTALL_WORKBUDDY.md',
+    'docs/images/readme-hero.png',
     'docs/images/dashboard-desktop.png',
     'docs/images/dashboard-mobile.png',
     'docs/images/exception-control.png',
@@ -15,11 +17,13 @@ test('public package contains beginner docs and agent artifacts', async () => {
     'agents/finance-workbench/references/workflows.json',
     'scripts/install-agent.sh',
     'scripts/install-dsh.sh',
+    'scripts/install-workbuddy-app.sh',
+    'workbuddy/widget.html',
   ]
   await Promise.all(files.map(file => access(new URL(`../${file}`, import.meta.url))))
   const catalog = JSON.parse(await readFile(new URL('../agents/finance-workbench/references/workflows.json', import.meta.url), 'utf8'))
   assert.equal(catalog.workflows.length, 25)
-  assert.equal(catalog.productVersion, '2.3.0')
+  assert.equal(catalog.productVersion, '2.4.0')
 })
 
 test('public defaults use generic demonstration identity', async () => {

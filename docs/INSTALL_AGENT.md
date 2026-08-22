@@ -1,6 +1,6 @@
 # AI Agent 安装指南
 
-本指南适用于 WorkBuddy、Codex、Claude Code 以及能够读取本地技能目录的其他智能体。
+本指南适用于 Codex、Claude Code 以及能够读取本地技能目录的其他智能体。它安装财务规则与 25 个工作流，**不安装图形界面**。WorkBuddy 用户请优先使用[完整可视化应用安装](INSTALL_WORKBUDDY.md)。
 
 ## 安装前准备
 
@@ -8,7 +8,7 @@
 - 能正常启动目标 AI Agent。
 - 先用演示数据试跑，不要直接拿真实银行流水测试。
 
-## WorkBuddy 安装
+## WorkBuddy 只安装 Skill
 
 ### macOS / Linux
 
@@ -18,7 +18,7 @@ cd workbuddy-finance-workbench
 ./scripts/install-agent.sh workbuddy
 ```
 
-脚本会安装到 `~/.workbuddy/skills/finance-workbench/`。如果已经存在旧版，会先移动到带时间戳的备份目录。
+脚本会安装到 `~/.workbuddy/skills/finance-workbench/`。如果已经存在旧版，会先移动到带时间戳的备份目录。此方式适合只需要工作流规则的用户；完整界面使用 [WorkBuddy MCP App 安装器](INSTALL_WORKBUDDY.md)。
 
 ### Windows PowerShell
 
@@ -88,13 +88,13 @@ macOS / Linux：
 
 ## 能力差异
 
-| 能力 | DeepSeek Harness UI | AI Agent Skill |
-|---|---:|---:|
-| 25 个工作流 | ✓ | ✓ |
-| 规则、输出和验收清单 | ✓ | ✓ |
-| 文件处理和结果生成 | 取决于 Agent 权限 | 取决于 Agent 权限 |
-| 可视化首页与左侧导航 | ✓ | — |
-| 资料库置顶、引用和下载 | ✓ | 由 Agent 自身能力决定 |
-| 人工复核红线 | ✓ | ✓ |
+| 能力 | WorkBuddy MCP App | DeepSeek Harness UI | AI Agent Skill |
+|---|---:|---:|---:|
+| 25 个工作流 | ✓ | ✓ | ✓ |
+| 规则、输出和验收清单 | ✓ | ✓ | ✓ |
+| 文件处理和结果生成 | 取决于 WorkBuddy 权限 | 取决于 DSH 权限 | 取决于 Agent 权限 |
+| 可视化首页与左侧导航 | ✓ | ✓ | — |
+| 资料库索引、引用和下载 | 当前 Widget 会话 | ✓ | 由 Agent 自身能力决定 |
+| 人工复核红线 | ✓ | ✓ | ✓ |
 
 Agent Skill 不会帮你配置模型账号，也不会读取 API Key。请在目标软件自己的设置页面中完成模型配置。

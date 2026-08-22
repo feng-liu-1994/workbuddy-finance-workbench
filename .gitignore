@@ -3,6 +3,7 @@ node_modules/
 .playwright-cli/
 output/
 release/
+release.backup-*/
 *.log
 *.tmp
 *.bak

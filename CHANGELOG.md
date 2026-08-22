@@ -1,5 +1,14 @@
 # 更新记录
 
+## 2.4.0 - 2026-08-22
+
+- 新增 WorkBuddy 原生 MCP App：可在对话中打开完整交互式财务工作台，不再只提供 Skill。
+- 新增 macOS 双击安装、Shell/PowerShell 安装和可恢复卸载；安装前备份旧应用、Skill 与 MCP 配置。
+- WorkBuddy Widget 完全本地打包并压缩到 256 KB 预取限制内，不依赖 CDN。
+- 新增 MCP 协议级自动化测试，校验工具发现、UI 资源读取、Widget MIME、模块数与工作流数。
+- 重做 README：明确三种运行方式，提供横向实机截图、首屏安装入口、能力差异与新手操作说明。
+- 修正“WorkBuddy 支持”表述：区分完整 MCP App、DeepSeek Harness 原生插件和通用 Agent Skill。
+
 ## 2.3.0 - 2026-08-22
 
 - 新增异常控制台，统一管理风险等级、金额影响、责任人、截止日、来源依据和处置证据。

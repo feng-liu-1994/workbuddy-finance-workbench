@@ -1,159 +1,144 @@
+<div align="center">
+
 # WorkBuddy 财务工作台
 
+**把财务日常、异常闭环与 AI 工作流，放进一个真正可操作的专业工作台。**
+
 [![CI](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/feng-liu-1994/workbuddy-finance-workbench)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-28564f.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/feng-liu-1994/workbuddy-finance-workbench?display_name=tag)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases/latest)
+[![WorkBuddy](https://img.shields.io/badge/WorkBuddy-MCP%20App-536BF0)](https://www.codebuddy.cn/docs/cli/mcp-apps)
+[![License](https://img.shields.io/badge/License-MIT-28564F)](LICENSE)
 
-一个面向财务人员的开源 AI 工作台：把收入、往来、报销、资金、核算、税务、报表和经营分析，整理成可执行、可复核、可留痕的标准流程。界面采用现代雾光背景、清晰信息层级和克制卡片体系，提供 4 套专业主题；正文、表单和按钮按长时间办公重新放大，适合财务人员持续录入与复核，也照顾第一次使用财务自动化的新手。
+[一键安装](#30-秒安装) · [功能说明](#不是一张看板而是一套财务闭环) · [使用边界](#数据与专业边界) · [开发文档](#开发与验证)
 
-它提供两种使用方式：
+<img src="docs/images/readme-hero.png" width="1080" alt="WorkBuddy 财务工作台桌面总览">
 
-- **DeepSeek Harness 图形工作台**：获得与截图一致的完整界面、资料库和任务发起体验。
-- **WorkBuddy / Codex / Claude 等 AI Agent Skill**：安装 `agents/finance-workbench`，让支持技能目录的智能体直接使用 25 个财务工作流。其他智能体也可以直接读取 `SKILL.md` 和工作流目录。
+</div>
 
-> 重要说明：其他 AI Agent 安装的是同一套财务方法、规则与验收闭环；完整可视化界面目前由 DeepSeek Harness 插件提供。
+这是一个面向财务人员和财务 FDE 场景的开源工作台。它不是只有提示词的 Skill：在 **WorkBuddy 中可直接打开完整交互界面**，在 **DeepSeek Harness 中可作为原生侧栏应用运行**，也保留通用 Agent Skill 供 Codex、Claude Code 等工具读取。
 
-![桌面版财务工作台](docs/images/dashboard-desktop.png)
+界面采用克制的雾光层次与高可读字号，不使用夸张高光、塑料质感或密集小字。内置 20 个工作模块、25 个 AI 工作流、异常责任闭环、月结证据控制、经营快照、资料索引和本机备份。
 
-<p align="center"><img src="docs/images/dashboard-mobile.png" width="360" alt="手机与窄窗口适配效果"></p>
+## 先选对安装方式
 
-## 现代界面与 4 套主题
-
-| 主题 | 视觉性格 | 推荐场景 |
+| 使用环境 | 得到什么 | 推荐入口 |
 |---|---|---|
-| 雾光靛蓝 | 清晰、现代、专注 | 默认日常办公、汇报演示 |
-| 松石墨绿 | 稳健、克制、专业 | 核算、审计、内控工作 |
-| 暖砂棕金 | 温和、沉静、低刺激 | 长时间录入与复核 |
-| 夜航深色 | 低照度、高对比 | 夜间工作或深色偏好 |
+| **WorkBuddy** | 完整图形工作台 + 25 个工作流 + Skill | [一键安装完整应用](docs/INSTALL_WORKBUDDY.md) |
+| **DeepSeek Harness** | 左侧导航中的原生完整工作台 | [安装 DSH 插件](docs/INSTALL_DSH.md) |
+| **Codex / Claude Code / 其他 Agent** | 财务规则、工作流与验收清单；不含图形界面 | [安装通用 Skill](docs/INSTALL_AGENT.md) |
 
-主题可以在顶部快速切换，也可以在“系统设置”中查看完整预览；选择结果保存在浏览器本机，并随 JSON 备份一起导出。界面借鉴现代工作台的雾光层次、半透明导航与大标题节奏，同时保留财务场景需要的稳重、密度和可读性。
+> 三种方式共用同一套财务口径和工作流。图形界面的承载方式不同：WorkBuddy 使用 MCP App Widget，DeepSeek Harness 使用原生 UI 插件，其他 Agent 使用 Markdown/JSON Skill。
 
-![夜航深色主题与模块工作指引](docs/images/theme-night.png)
+## 30 秒安装
 
-## 20 个工作模块
+### macOS：WorkBuddy 完整版
 
-| 分组 | 模块 | 能做什么 |
-|---|---|---|
-| 总览 | 财务总览 | 录入本期汇总数，自动计算利润，查看今日财务节奏、近 6 期趋势、待办、月结和财务全流程 |
-| 经营与往来 | 收入管理、应收账款、应付账款、费用报销、资金管理、预算管理 | 从业务确认、账龄和付款排期，到资金预测、预算偏差与责任跟踪 |
-| 核算与合规 | 固定资产、税务管理、发票管理、工资管理、银行对账、成本核算 | 台账、勾稽、异常检查、证据链、分摊规则与月末核对 |
-| 报告与决策 | 财务报表、财务分析、投资管理 | 报表勾稽、趋势拆解、管理摘要、现金流情景和投后跟踪 |
-| 治理与系统 | 异常控制台、审计日志、数据备份、系统设置 | 统一异常责任闭环、最近 200 条本机留痕、JSON 备份恢复、个人期间、阈值和字段字典 |
+1. 下载 [WorkBuddy macOS 安装包](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases/latest/download/workbuddy-finance-workbench-macos.zip)。
+2. 解压，双击 **`安装 WorkBuddy 财务工作台.command`**。
+3. 保存 WorkBuddy 中正在编辑的内容，完全退出后重新打开。
+4. 在 WorkBuddy 输入：**`打开财务工作台`**。
 
-待办、月结、资料库和全部工作流放在顶部快捷区，避免把侧栏做得冗长。资料库继续支持上传、文件夹导入、拖放、搜索、筛选、置顶、引用和下载。
+安装器会先备份已有 Skill 与 `.mcp.json`，只新增 `finance-workbench` 配置项；不会读取财务文件、API Key，也不会强制重启 WorkBuddy。首次安装前需要 [Node.js 20+](https://nodejs.org/zh-cn/download)。
 
-每个业务模块先告诉新手“谁负责、多久做一次、第一步做什么”，再提供复核断言、4 步处理链路、关键控制、固定交付物和推荐 AI 工作流。每个工作流都包含：岗位定位、输入资料、字段口径、关键规则、7 步执行流程、固定交付物、验收清单和人工复核边界。
+### Windows：WorkBuddy 完整版
 
-### 异常控制台：把发现的问题真正关掉
-
-异常控制台把分散在对账、回款、报销、税务和月结中的待复核事项统一登记。每条异常都有风险等级、金额影响、责任人、截止日期、来源依据和处置证据；工作台自动识别高关注、逾期和大额事项，并按风险分数排序。没有填写处置证据的事项不能关闭，也可以一键转成待办或导出 CSV 跟踪。
-
-![异常控制台（全部为虚构演示数据）](docs/images/exception-control.png)
-
-## 新手怎么选
-
-| 你的环境 | 推荐安装 | 结果 |
-|---|---|---|
-| 已安装 DeepSeek Harness | [安装完整图形工作台](docs/INSTALL_DSH.md) | 完整界面与资料库 |
-| 使用 WorkBuddy | [安装 WorkBuddy Skill](docs/INSTALL_AGENT.md#workbuddy-安装) | 25 个财务工作流供 Agent 调用 |
-| 使用 Codex | [安装 Codex Skill](docs/INSTALL_AGENT.md#codex-安装) | 在项目中执行财务任务 |
-| 使用 Claude Code | [安装 Claude Skill](docs/INSTALL_AGENT.md#claude-code-安装) | 读取相同 SOP 与规则 |
-| 其他 AI Agent | 让 Agent 读取 `agents/finance-workbench/SKILL.md` | 通用 Markdown/JSON 方式 |
-
-## 最简单的安装方式
-
-### WorkBuddy
-
-```bash
-git clone https://github.com/feng-liu-1994/workbuddy-finance-workbench.git
-cd workbuddy-finance-workbench
-./scripts/install-agent.sh workbuddy
-```
-
-安装后重新打开 WorkBuddy，新建任务时可以直接说：
-
-```text
-请使用 finance-workbench，先检查字段和口径，再核对这两份银行流水与账务明细。
-```
-
-### DeepSeek Harness 完整界面
-
-```bash
-git clone https://github.com/feng-liu-1994/workbuddy-finance-workbench.git
-cd workbuddy-finance-workbench
-./scripts/install-dsh.sh
-```
-
-脚本会先备份配置，再安装依赖、运行测试并注册插件。详细步骤与恢复方法见 [DeepSeek Harness 安装指南](docs/INSTALL_DSH.md)。
-
-### 不想使用终端
-
-1. 打开 [Releases](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases)。
-2. 下载 `finance-workbench-agent-v2.3.0.zip`。
-3. 解压后，把 `finance-workbench` 文件夹放到 WorkBuddy 的 `~/.workbuddy/skills/`。
-4. 重新打开 WorkBuddy。
-
-Windows 用户可在 PowerShell 中运行：
+下载 [WorkBuddy Windows 安装包](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases/latest/download/workbuddy-finance-workbench-windows.zip)，解压后在目录中打开 PowerShell：
 
 ```powershell
-.\scripts\install-agent.ps1 workbuddy
+powershell -ExecutionPolicy Bypass -File .\scripts\install-workbuddy-app.ps1
 ```
 
-## 第一次使用
-
-1. 在“系统设置”中选择主题，并修改称呼、主体、期间和金额阈值。
-2. 回到“财务总览”，录入本期收入、支出、资金、应收、应付和预算汇总数。
-3. 把脱敏后的资料放入工作区，或在顶部“资料库”中上传。
-4. 从业务模块进入推荐工作流，或在顶部“工作流”中搜索全部场景。
-5. 把跨模块待复核事项登记到“异常控制台”，写清来源、责任人、截止日和金额影响。
-6. 先确认字段映射、口径、异常规则和拟输出，再使用 20–50 行样本试跑。
-7. 人工核对后处理全量；取得底稿、凭证号或业务确认后再关闭异常，并在“审计日志”和“数据备份”中保留过程证据。
-
-仓库提供了完全虚构的 [演示数据](examples/demo/README.md)，可以安全练习。
-
-## 数据安全边界
-
-- 仓库不包含真实发票、银行流水、个人身份信息、公司数据、密码、Cookie、Token 或 API Key。
-- 经营快照、待办、异常台账、收藏、字段字典、阈值和操作日志默认保存在浏览器本机 `localStorage`。
-- JSON 设置备份不包含原始财务资料。
-- 工作流只处理副本，不应覆盖、移动或删除原件。
-- OCR 和 AI 推断不能直接作为入账、付款、纳税申报或违规认定依据。
-- 工资、身份证号、银行卡、税号等资料应在获得授权的环境中按最小必要原则处理。
-
-详见 [安全政策](SECURITY.md)。
-
-## 开发与验证
-
-要求 Node.js 20 或更高版本。
+### 从源码安装
 
 ```bash
-npm ci
-npm run check
-npm run verify:release
+git clone https://github.com/feng-liu-1994/workbuddy-finance-workbench.git
+cd workbuddy-finance-workbench
+./scripts/install-workbuddy-app.sh
 ```
 
-检查内容包括 27 项单元测试、20 个导航模块、25 个工作流结构、异常关闭证据门槛、目录穿越防护、任务包生成、浏览器备份格式、公开文件脱敏扫描、生产构建和 npm 发布清单。
+完整安装、更新、卸载和排障步骤见 [WorkBuddy 新手安装指南](docs/INSTALL_WORKBUDDY.md)。
+
+## 不是一张看板，而是一套财务闭环
+
+| 工作层级 | 模块 | 解决的问题 |
+|---|---|---|
+| 经营与往来 | 收入、应收、应付、报销、资金、预算 | 业务确认、账龄、付款排期、13 周资金预测与预算偏差 |
+| 核算与合规 | 资产、税务、发票、工资、对账、成本 | 台账勾稽、期间截止、重复识别、证据链与分摊复核 |
+| 报告与决策 | 报表、分析、投资 | 报表勾稽、差异归因、管理摘要、情景测算与投后跟踪 |
+| 治理与系统 | 异常、审计、备份、设置 | 责任到人、期限跟踪、处置证据、本机留痕与口径治理 |
+
+每个业务模块都给出责任岗位、建议频率、第一步、关键控制、固定交付物和推荐工作流。每个 AI 工作流都包含输入、字段口径、处理规则、7 步执行路径、交付成果、验收清单和人工复核点。
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/exception-control.png" alt="异常控制台"><br><sub><b>异常控制台</b>：风险、金额、责任人、期限、来源与处置证据</sub></td>
+    <td width="50%"><img src="docs/images/theme-night.png" alt="深色主题"><br><sub><b>4 套专业主题</b>：雾光靛蓝、松石墨绿、暖砂棕金、夜航深色</sub></td>
+  </tr>
+</table>
+
+### 财务控制不是“发现异常”就结束
+
+异常控制台会按风险等级、金额影响和逾期状态排序。没有处置证据的事项不能关闭；任何异常都可以转成待办或导出 CSV。经营快照、待办、月结、异常、收藏、字段字典和审计日志可以整体导出为 JSON 备份。
+
+### 新手第一次使用
+
+1. 在“系统设置”选择主题，填写主体、期间和重要性阈值。
+2. 在“财务总览”录入本期汇总数，先看经营快照与今日节奏。
+3. 用仓库中的[虚构演示数据](examples/demo/README.md)打开一个工作流试跑。
+4. 先确认字段映射、口径、异常规则和预期输出，再处理 20–50 行样本。
+5. 人工复核后再处理全量；取得底稿、凭证号或业务确认后关闭异常。
+
+## WorkBuddy 完整版如何工作
+
+安装包同时部署两部分：
+
+- `MCP App`：在 WorkBuddy 对话中打开全屏交互工作台；工作流按钮会把结构化任务填入输入框，发送前由你核对附件。
+- `finance-workbench Skill`：为 WorkBuddy 提供财务规则、执行边界和 25 个标准场景。
+
+Widget 资源完全本地打包，不依赖 CDN。MCP App 采用 WorkBuddy 官方的 `text/html;profile=mcp-app` 资源协议；终端型客户端会自然降级为文字结果。
+
+## 数据与专业边界
+
+- 仓库只包含虚构演示数据，不包含真实发票、流水、身份信息、密码、Cookie、Token 或 API Key。
+- 经营快照、待办、异常、字段字典和设置默认保存在当前应用的浏览器本机存储中。
+- Widget 中选择文件只建立当前会话索引；执行工作流前仍需在 WorkBuddy 输入框确认并添加原始附件。
+- JSON 备份不包含原始财务文件；更新与卸载脚本保留带时间戳的配置副本。
+- AI/OCR 结果不能直接替代入账、付款、纳税申报、薪资发放或重大专业判断的人工复核。
+
+详见 [安全政策](SECURITY.md)。
 
 ## 项目结构
 
 ```text
-agents/finance-workbench/   通用 AI Agent Skill
-docs/                       图文安装与排障说明
-examples/demo/              虚构演示数据
-scripts/                    安装、卸载、验证和发布脚本
-src/                        DeepSeek Harness 插件源码
-test/                       自动化测试
-lib/                        已构建的插件文件
+workbuddy/                  已构建的 WorkBuddy MCP App
+agents/finance-workbench/   通用财务 Agent Skill
+src/                        WorkBuddy / DSH 共用界面与业务源码
+scripts/                    安装、卸载、构建、脱敏与发布验证
+docs/                       图文安装、排障与版本说明
+examples/demo/              完全虚构的练习数据
+test/                       单元、协议与发布完整性测试
 ```
 
-## 文档入口
+## 开发与验证
 
+要求 Node.js 20+：
+
+```bash
+npm ci
+npm run verify:release
+```
+
+发布校验覆盖：20 个导航模块、25 个工作流、异常关闭门槛、目录穿越防护、备份格式、WorkBuddy MCP 协议、256 KB Widget 上限、隔离目录安装/卸载、公开文件脱敏扫描、生产构建和 npm 发布清单。
+
+## 文档
+
+- [WorkBuddy 完整应用安装](docs/INSTALL_WORKBUDDY.md)
 - [DeepSeek Harness 完整界面安装](docs/INSTALL_DSH.md)
-- [WorkBuddy / Codex / Claude / 其他 Agent 安装](docs/INSTALL_AGENT.md)
+- [Codex / Claude / 通用 Agent Skill](docs/INSTALL_AGENT.md)
 - [常见问题与排障](docs/TROUBLESHOOTING.md)
+- [更新记录](CHANGELOG.md)
 - [参与贡献](CONTRIBUTING.md)
-- [版本记录](CHANGELOG.md)
 
 ## 开源许可
 
-代码采用 [MIT License](LICENSE)。财务处理结果请由具备权限和专业判断能力的人员复核。
+代码采用 [MIT License](LICENSE)。欢迎提交 Issue 和 Pull Request；财务处理结果请由具备权限和专业判断能力的人员复核。

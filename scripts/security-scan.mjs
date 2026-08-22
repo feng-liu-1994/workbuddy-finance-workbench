@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const ignored = new Set(['.git', 'node_modules', 'output', 'release', '.playwright-cli'])
-const textExtensions = new Set(['', '.js', '.jsx', '.mjs', '.json', '.md', '.yml', '.yaml', '.sh', '.ps1', '.csv', '.txt'])
+const textExtensions = new Set(['', '.js', '.jsx', '.mjs', '.cjs', '.html', '.command', '.json', '.md', '.yml', '.yaml', '.sh', '.ps1', '.csv', '.txt'])
 const forbidden = [
   ['private macOS home path', new RegExp(`/${'Users'}/`)],
   ['private account name', new RegExp(['liu', 'yong', 'mo'].join(''), 'i')],
