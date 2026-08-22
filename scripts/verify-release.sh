@@ -14,5 +14,6 @@ npm run check
 node -e "const c=require('./agents/finance-workbench/references/workflows.json'); if(c.workflows.length!==25) process.exit(1)"
 test -f docs/images/dashboard-desktop.png
 test -f docs/images/dashboard-mobile.png
+test -f docs/images/exception-control.png
 npm pack --dry-run >/dev/null
 echo "release verification passed"

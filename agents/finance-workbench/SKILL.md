@@ -3,7 +3,7 @@ name: finance-workbench
 description: 面向财务人员的受控自动化工作流。用于收入、应收应付、报销、资金预算、资产、税务发票、工资、对账、成本、报表分析、投资、月结、审计与财务归档；要求字段口径、异常清单、结果校验、人工复核和处理留痕。
 license: MIT
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   repository: "https://github.com/feng-liu-1994/workbuddy-finance-workbench"
 ---
 

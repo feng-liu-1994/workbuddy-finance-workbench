@@ -379,7 +379,7 @@ export const NAV_GROUPS = [
   { label: '经营与往来', items: [['revenue', '收入管理', '收'], ['receivables', '应收账款', '应'], ['payables', '应付账款', '付'], ['expenses', '费用报销', '费'], ['treasury', '资金管理', '资'], ['budget', '预算管理', '预']] },
   { label: '核算与合规', items: [['assets', '固定资产', '固'], ['tax', '税务管理', '税'], ['invoices', '发票管理', '票'], ['payroll', '工资管理', '薪'], ['reconcile', '银行对账', '银'], ['costing', '成本核算', '本']] },
   { label: '报告与决策', items: [['statements', '财务报表', '表'], ['analysis', '财务分析', '析'], ['investment', '投资管理', '投']] },
-  { label: '治理与系统', items: [['audit', '审计日志', '审'], ['backup', '数据备份', '备'], ['settings', '系统设置', '设']] },
+  { label: '治理与系统', items: [['exceptions', '异常控制台', '异'], ['audit', '审计日志', '审'], ['backup', '数据备份', '备'], ['settings', '系统设置', '设']] },
 ]
 
 export const NAV_ITEMS = NAV_GROUPS.flatMap(group => group.items)

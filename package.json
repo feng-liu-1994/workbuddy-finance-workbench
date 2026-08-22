@@ -1,7 +1,7 @@
 {
   "name": "dsh-finance-workbench",
-  "version": "2.2.0",
-  "description": "DeepSeek Harness 财务专业工作台 — 25 个场景、资料库、月结内控与验收闭环",
+  "version": "2.3.0",
+  "description": "DeepSeek Harness 财务专业工作台 — 20 个模块、异常责任闭环、25 个 AI 工作流与本机备份",
   "license": "MIT",
   "homepage": "https://github.com/feng-liu-1994/workbuddy-finance-workbench#readme",
   "repository": {

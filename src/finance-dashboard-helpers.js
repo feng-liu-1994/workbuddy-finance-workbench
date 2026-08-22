@@ -59,6 +59,7 @@ export function buildFinanceBackup(state) {
     settings: state.settings,
     snapshots: Array.isArray(state.snapshots) ? state.snapshots : [],
     auditLog: Array.isArray(state.auditLog) ? state.auditLog : [],
+    exceptions: Array.isArray(state.exceptions) ? state.exceptions : [],
     theme: String(state.theme || 'indigo'),
   }
 }
@@ -68,6 +69,64 @@ export function parseFinanceBackup(value) {
   if (!data || data.product !== 'dsh-finance-workbench' || Number(data.version) !== 2) throw new Error('不是有效的财务工作台 v2 备份')
   if (!Array.isArray(data.todos) || !Array.isArray(data.closeTasks) || !Array.isArray(data.favorites) || !Array.isArray(data.fieldDictionary)) throw new Error('财务工作台备份内容不完整')
   return data
+}
+
+export const EXCEPTION_STATUSES = ['未处理', '处理中', '待业务确认', '已关闭']
+
+export function normalizeFinanceException(item, fallbackDate = localDateKey()) {
+  const amount = Number(item?.amount)
+  const now = new Date().toISOString()
+  return {
+    id: String(item?.id || `exception-${Date.now().toString(36)}`),
+    title: String(item?.title || '').trim().slice(0, 120),
+    category: String(item?.category || '通用').trim().slice(0, 30),
+    severity: ['高', '中', '低'].includes(item?.severity) ? item.severity : '中',
+    amount: Number.isFinite(amount) && amount >= 0 ? amount : 0,
+    owner: String(item?.owner || '待明确').trim().slice(0, 40) || '待明确',
+    due: /^\d{4}-\d{2}-\d{2}$/.test(String(item?.due || '')) ? String(item.due) : fallbackDate,
+    status: EXCEPTION_STATUSES.includes(item?.status) ? item.status : '未处理',
+    source: String(item?.source || '').trim().slice(0, 180),
+    evidence: String(item?.evidence || '').trim().slice(0, 300),
+    createdAt: String(item?.createdAt || now),
+    updatedAt: String(item?.updatedAt || item?.createdAt || now),
+  }
+}
+
+export function financeExceptionRisk(item, settings = {}, today = localDateKey()) {
+  const row = normalizeFinanceException(item, today)
+  if (row.status === '已关闭') return 0
+  let score = { 高: 60, 中: 35, 低: 15 }[row.severity]
+  if (row.due < today) score += 25
+  if (Number(settings.largeAmount) > 0 && row.amount >= Number(settings.largeAmount)) score += 15
+  if (row.status === '待业务确认') score += 5
+  return Math.min(100, score)
+}
+
+export function summarizeFinanceExceptions(items, settings = {}, today = localDateKey()) {
+  const rows = (Array.isArray(items) ? items : []).map(item => normalizeFinanceException(item, today))
+  const open = rows.filter(item => item.status !== '已关闭')
+  return {
+    open: open.length,
+    high: open.filter(item => financeExceptionRisk(item, settings, today) >= 60).length,
+    overdue: open.filter(item => item.due < today).length,
+    waiting: open.filter(item => item.status === '待业务确认').length,
+    amount: open.reduce((sum, item) => sum + item.amount, 0),
+    closed: rows.length - open.length,
+  }
+}
+
+export function canCloseFinanceException(item) {
+  return String(item?.evidence || '').trim().length >= 4
+}
+
+export function financeExceptionsToCsv(items) {
+  const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`
+  const header = ['异常事项', '业务模块', '风险等级', '金额影响', '责任人', '截止日期', '状态', '来源依据', '处置证据']
+  const rows = (Array.isArray(items) ? items : []).map(item => {
+    const row = normalizeFinanceException(item)
+    return [row.title, row.category, row.severity, row.amount, row.owner, row.due, row.status, row.source, row.evidence]
+  })
+  return `\uFEFF${[header, ...rows].map(row => row.map(quote).join(',')).join('\r\n')}`
 }
 
 export function emptyFinanceSnapshot(period = localDateKey().slice(0, 7)) {
