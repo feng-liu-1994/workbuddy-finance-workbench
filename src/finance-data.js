@@ -6,7 +6,11 @@ function defineWorkflow(config) {
   return {
     ...config,
     number: config.number || '',
+    extension: Boolean(config.extension),
     fileKinds: config.fileKinds || ['sheet', 'document'],
+    minimumInputs: config.minimumInputs || (config.inputs || []).slice(0, 2),
+    beginnerTip: config.beginnerTip || `先准备“${(config.inputs || []).slice(0, 2).join('”和“')}”；资料不全也可以先打开流程，让 AI 一次列出缺项。`,
+    sampleRequest: config.sampleRequest || `请帮我用“${config.title}”处理本期资料。先检查文件和字段是否齐全，再给出处理预览；我确认后再处理小样本。`,
     outputs: [...(config.outputs || []), ...COMMON_OUTPUTS.filter(item => !(config.outputs || []).includes(item))],
     checklist: config.checklist || ['原始文件已保留', '原始行号可追溯', '行数与金额已校验', '关键结论经人工复核'],
     prompt: config.prompt || [
@@ -202,7 +206,7 @@ export const FINANCE_WORKFLOWS = [
     outputs: ['拟归档操作清单', '缺失附件跟进表'], checklist: ['先副本试跑', '不删除原件', '命名统一', '缺失资料可跟进'],
   }),
   defineWorkflow({
-    id: 'contract-terms', title: '合同付款条款提取', group: 'extended', role: '合同会计 / 资金岗',
+    id: 'contract-terms', number: '23', extension: true, title: '合同付款条款提取', group: 'extended', role: '合同会计 / 资金岗',
     desc: '定位条款原文，形成合同主表、付款计划与到期风险清单。', keywords: ['合同', '协议', '付款', '验收', '质保'], fileKinds: ['document'],
     inputs: ['合同 PDF/Word 与补充协议', '已付款台账', '验收节点与开票记录'],
     rules: ['主合同和补充协议正确关联', '关键字段保留页码或段落证据', '条件式节点不臆造日期', '模糊冲突条款由人工复核'],
@@ -210,7 +214,7 @@ export const FINANCE_WORKFLOWS = [
     outputs: ['合同付款台账', '条款证据索引'], checklist: ['补充协议关联正确', '金额与比例可勾稽', '条件节点未臆造', '原文证据可定位'],
   }),
   defineWorkflow({
-    id: 'local-automation', title: '周期任务与本地自动化', group: 'extended', role: '财务主管 / 流程负责人',
+    id: 'local-automation', number: '24', extension: true, title: '周期任务与本地自动化', group: 'extended', role: '财务主管 / 流程负责人',
     desc: '把月结、付款到期和周报做成可试运行、可追溯的本地任务。', keywords: ['自动化', '定时', '月结', '提醒', '周报'],
     inputs: ['月结清单与付款计划', '任务频率和时区', '提醒对象与异常阈值'],
     rules: ['默认演练模式', '只读、汇总、提醒或草稿生成', '不自动付款审批或删除', '数据源变化时安全停止'],
@@ -218,7 +222,7 @@ export const FINANCE_WORKFLOWS = [
     outputs: ['自动化配置表', '试运行日志与结果'], checklist: ['没有高风险自动动作', '日志完整', '缺失数据安全停止', '正式启用前已试跑'],
   }),
   defineWorkflow({
-    id: 'policy-knowledge', title: '财务制度知识库与受控协同', group: 'extended', role: '财务主管 / 内控岗',
+    id: 'policy-knowledge', number: '25', extension: true, title: '财务制度知识库与受控协同', group: 'extended', role: '财务主管 / 内控岗',
     desc: '整理制度证据库，生成有出处的问答与权限清晰的协同流程。', keywords: ['制度', '办法', '报销标准', '知识库', '协同'],
     inputs: ['现行财务制度', '历史 FAQ', '审批流程', '岗位权限与协同渠道'],
     rules: ['每条回答引用制度版本和条款', '过期冲突制度不作确定回答', '关键写入和发送动作二次确认', '敏感文件不经未授权渠道外发'],

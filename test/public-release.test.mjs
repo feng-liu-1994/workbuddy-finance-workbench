@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { access, readFile } from 'node:fs/promises'
+import { access, readFile, readdir } from 'node:fs/promises'
 
 test('public package contains beginner docs and agent artifacts', async () => {
   const files = [
@@ -15,6 +15,7 @@ test('public package contains beginner docs and agent artifacts', async () => {
     'docs/images/theme-night.png',
     'agents/finance-workbench/SKILL.md',
     'agents/finance-workbench/references/workflows.json',
+    'agents/finance-workbench/references/prompts/README.md',
     'scripts/install-agent.sh',
     'scripts/install-dsh.sh',
     'scripts/install-workbuddy-app.sh',
@@ -23,7 +24,16 @@ test('public package contains beginner docs and agent artifacts', async () => {
   await Promise.all(files.map(file => access(new URL(`../${file}`, import.meta.url))))
   const catalog = JSON.parse(await readFile(new URL('../agents/finance-workbench/references/workflows.json', import.meta.url), 'utf8'))
   assert.equal(catalog.workflows.length, 25)
-  assert.equal(catalog.productVersion, '2.4.0')
+  assert.equal(catalog.productVersion, '2.5.0')
+  const promptFiles = (await readdir(new URL('../agents/finance-workbench/references/prompts/', import.meta.url))).filter(file => /^\d{2}-.+\.md$/.test(file))
+  assert.equal(promptFiles.length, 25)
+  for (const workflow of catalog.workflows) {
+    const filename = `${workflow.number}-${workflow.id}.md`
+    assert.ok(promptFiles.includes(filename), filename)
+    const prompt = await readFile(new URL(`../agents/finance-workbench/references/prompts/${filename}`, import.meta.url), 'utf8')
+    assert.match(prompt, new RegExp(`【财务任务包】${workflow.title}`))
+    assert.match(prompt, /【新手填写区/)
+  }
 })
 
 test('public defaults use generic demonstration identity', async () => {
@@ -36,6 +46,8 @@ test('public defaults use generic demonstration identity', async () => {
   assert.match(dashboard, /夜航深色/)
   assert.match(dashboard, /data-theme=\{theme\}/)
   assert.match(dashboard, /异常要有主人，也要有退出条件/)
+  assert.match(dashboard, /25 个财务工作流，每个都有完整提示词/)
+  assert.match(dashboard, /复制完整提示词/)
   assert.match(dashboard, /canCloseFinanceException/)
   assert.match(prompt, /你是用户的财务执行助理/)
   assert.doesNotMatch(`${dashboard}\n${prompt}`, new RegExp(['永', '模'].join('')))

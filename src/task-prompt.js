@@ -8,6 +8,14 @@ export const CONTROL_PROTOCOL = `【执行闭环】
 4. 质量复核：完成总笔数、金额合计、勾稽关系、重复值、缺失值和异常值检查，并执行专项核查清单。
 5. 交付归档：保留原始输入、执行输出、复核说明和异常明细；在回复中给出实际生成文件的相对路径。`
 
+export const BEGINNER_BRIEF = `【新手填写区（不清楚可留空）】
+- 处理主体：
+- 处理期间：
+- 已上传资料：
+- 特别口径或阈值：
+- 希望交付时间：
+留空的内容先尝试从当前对话和文件中识别；仍影响处理时，把所有必需缺项合并成一次询问，并用财务人员熟悉的语言说明如何准备。`
+
 function asLines(value) {
   return (Array.isArray(value) ? value : [value]).filter(Boolean)
 }
@@ -20,6 +28,7 @@ export function composeFinanceTask(scenario, { includeChecklist = true } = {}) {
   const sections = [
     `【财务任务包】${scenario.title}`,
     FINANCE_PROFILE,
+    BEGINNER_BRIEF,
     `【所需资料】\n${inputs.map(item => `- ${item}`).join('\n')}`,
     `【交付成果】\n${outputs.map(item => `- ${item}`).join('\n')}`,
     CONTROL_PROTOCOL,

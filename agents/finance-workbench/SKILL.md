@@ -3,7 +3,7 @@ name: finance-workbench
 description: 面向财务人员的受控自动化工作流。用于收入、应收应付、报销、资金预算、资产、税务发票、工资、对账、成本、报表分析、投资、月结、审计与财务归档；要求字段口径、异常清单、结果校验、人工复核和处理留痕。
 license: MIT
 metadata:
-  version: "2.3.0"
+  version: "2.5.0"
   repository: "https://github.com/feng-liu-1994/workbuddy-finance-workbench"
 ---
 
@@ -51,4 +51,4 @@ metadata:
 
 ## 工作流目录
 
-`references/workflows.json` 是机器可读的完整目录，`references/workflows.md` 是便于人工查看的版本。二者由仓库脚本生成，不要手工制造与目录不一致的编号。
+`references/workflows.json` 是机器可读的完整目录，`references/workflows.md` 是便于人工查看的版本，`references/prompts/` 包含 01–25 号工作流各自独立、可直接复制的完整提示词。这些文件由仓库脚本生成，不要手工制造与目录不一致的编号。

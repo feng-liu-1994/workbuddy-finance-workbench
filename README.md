@@ -9,7 +9,7 @@
 [![WorkBuddy](https://img.shields.io/badge/WorkBuddy-MCP%20App-536BF0)](https://www.codebuddy.cn/docs/cli/mcp-apps)
 [![License](https://img.shields.io/badge/License-MIT-28564F)](LICENSE)
 
-[一键安装](#30-秒安装) · [功能说明](#不是一张看板而是一套财务闭环) · [使用边界](#数据与专业边界) · [开发文档](#开发与验证)
+[一键安装](#30-秒安装) · [25 份提示词](#25-份可直接复制的提示词) · [功能说明](#不是一张看板而是一套财务闭环) · [使用边界](#数据与专业边界) · [开发文档](#开发与验证)
 
 <img src="docs/images/readme-hero.png" width="1080" alt="WorkBuddy 财务工作台桌面总览">
 
@@ -17,7 +17,7 @@
 
 这是一个面向财务人员和财务 FDE 场景的开源工作台。它不是只有提示词的 Skill：在 **WorkBuddy 中可直接打开完整交互界面**，在 **DeepSeek Harness 中可作为原生侧栏应用运行**，也保留通用 Agent Skill 供 Codex、Claude Code 等工具读取。
 
-界面采用克制的雾光层次与高可读字号，不使用夸张高光、塑料质感或密集小字。内置 20 个工作模块、25 个 AI 工作流、异常责任闭环、月结证据控制、经营快照、资料索引和本机备份。
+界面采用克制的雾光层次与高可读字号，不使用夸张高光、塑料质感或密集小字。内置 20 个工作模块、25 个统一编号的 AI 工作流、25 份可查看与复制的完整提示词、异常责任闭环、月结证据控制、经营快照、资料索引和本机备份。
 
 ## 先选对安装方式
 
@@ -57,6 +57,16 @@ cd workbuddy-finance-workbench
 ```
 
 完整安装、更新、卸载和排障步骤见 [WorkBuddy 新手安装指南](docs/INSTALL_WORKBUDDY.md)。
+
+## 25 份可直接复制的提示词
+
+25 个工作流已统一编号为 01–25，每个都有独立提示词，不需要先学习“提示词工程”：
+
+- 在 WorkBuddy / DeepSeek Harness 工作台中：打开“工作流”，选择场景，可查看或复制完整提示词。
+- 在 Codex、Claude Code 或其他 AI 工具中：打开 [25 份提示词目录](agents/finance-workbench/references/prompts/README.md)，复制对应文件的全部内容。
+- 不清楚主体、期间或口径时可留空；AI 会先识别现有文件，再一次列出真正必需的缺项。
+
+每份提示词都包含：新手填写区、所需资料、字段与口径预览、小样本试跑、异常边界、固定输出、金额/行数校验、人工复核和完成回报。
 
 ## 不是一张看板，而是一套财务闭环
 

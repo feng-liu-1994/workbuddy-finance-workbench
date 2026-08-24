@@ -14,6 +14,8 @@ const scenario = {
 test('composeFinanceTask creates an executable, evidence-backed task package', () => {
   const value = composeFinanceTask(scenario)
   assert.match(value, /【财务任务包】银行流水与账面核对/)
+  assert.match(value, /【新手填写区（不清楚可留空）】/)
+  assert.match(value, /所有必需缺项合并成一次询问/)
   assert.match(value, /【所需资料】[\s\S]*银行流水\.xlsx/)
   assert.match(value, /【交付成果】[\s\S]*银行对账结果\.xlsx/)
   assert.match(value, /当前工作区“输出\/财务工作台”子目录/)
