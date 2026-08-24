@@ -2,9 +2,7 @@
 
 # AI智能体财务工作台
 
-**把财务日常、异常闭环与 AI 工作流，放进一个真正可操作的专业工作台。欢迎扫码添加微信：weihuiaccounting，注明来意进一步交流学习**
-
-<img src="docs/images/筱亭微信.jpg" width="540" alt="欢迎交流，共同进步">
+**把财务日常、异常闭环与 AI 工作流，放进一个真正可操作的专业工作台。**
 
 [![CI](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/feng-liu-1994/workbuddy-finance-workbench?display_name=tag)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases/latest)
@@ -144,3 +142,9 @@ npm run verify:release
 ## 开源许可
 
 代码采用 [MIT License](LICENSE)。欢迎提交 Issue 和 Pull Request；财务处理结果请由具备权限和专业判断能力的人员复核。
+
+## 联系方式
+
+欢迎扫码添加微信：weihuiaccounting，注明来意进一步交流学习
+
+<img src="docs/images/筱亭微信.jpg" width="540" alt="欢迎交流，共同进步">
