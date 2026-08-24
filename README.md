@@ -2,7 +2,7 @@
 
 # AI智能体财务工作台
 
-**把财务日常、异常闭环与 AI 工作流，放进一个真正可操作的专业工作台。**
+**把收入、往来、报销、资金、核算、税务、报表和经营分析，整理成可执行、可复核、可留痕的标准流程。界面采用现代雾光背景、清晰信息层级和克制卡片体系，提供 4 套专业主题；正文、表单和按钮按长时间办公重新放大，适合财务人员持续录入与复核，兼顾使用财务自动化的新手。**
 
 [![CI](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/feng-liu-1994/workbuddy-finance-workbench?display_name=tag)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases/latest)
