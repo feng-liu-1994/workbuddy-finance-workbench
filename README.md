@@ -2,7 +2,7 @@
 
 # AI智能体财务工作台
 
-**把财务日常、异常闭环与 AI 工作流，放进一个真正可操作的专业工作台。**
+**把财务日常、异常闭环与 AI 工作流，放进一个真正可操作的专业工作台。欢迎添加微信：weihuiaccounting 进一步交流学习**
 
 [![CI](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/feng-liu-1994/workbuddy-finance-workbench?display_name=tag)](https://github.com/feng-liu-1994/workbuddy-finance-workbench/releases/latest)
