@@ -1,6 +1,6 @@
 {
   "name": "dsh-finance-workbench",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "WorkBuddy 与 DeepSeek Harness 可视化财务工作台 — 20 个模块、异常闭环和 25 个 AI 工作流",
   "license": "MIT",
   "homepage": "https://github.com/feng-liu-1994/workbuddy-finance-workbench#readme",
