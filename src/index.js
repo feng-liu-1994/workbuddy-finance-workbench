@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
+import { constants } from 'node:fs'
 import { execFile } from 'node:child_process'
-import { appendFile, mkdir, open, opendir, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises'
+import { appendFile, copyFile, mkdir, open, opendir, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { promisify } from 'node:util'
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
@@ -66,17 +67,18 @@ async function workspaceRoot(agent) {
   return realpath(cwd)
 }
 
-async function uniqueDestination(directory, name) {
+async function publishUpload(temp, directory, name) {
   const dot = name.lastIndexOf('.')
   const stem = dot > 0 ? name.slice(0, dot) : name
   const ext = dot > 0 ? name.slice(dot) : ''
   for (let index = 0; index < 1000; index += 1) {
     const candidate = join(directory, index === 0 ? name : `${stem}_${index}${ext}`)
     try {
-      await stat(candidate)
+      // Exclusive creation preserves files even when two uploads finish together.
+      await copyFile(temp, candidate, constants.COPYFILE_EXCL)
+      return candidate
     } catch (error) {
-      if (error?.code === 'ENOENT') return candidate
-      throw error
+      if (error?.code !== 'EEXIST') throw error
     }
   }
   throw new Error('同名文件过多，请先整理财务资料目录')
@@ -113,13 +115,14 @@ export class FinanceFilesService extends TypertRemoteService {
     this.purgeExpired()
     const root = await workspaceRoot(agent)
     const relativeName = safeUploadRelativePath(request.relativePath, request.name)
+    if (!Number.isSafeInteger(request.size) || request.size < 0) throw new Error('文件大小无效')
     if (request.size > MAX_FILE_BYTES) throw new Error('单个文件不能超过 50 MB')
     const uploadDirectory = join(root, '财务资料')
     await mkdir(uploadDirectory, { recursive: true })
     const requestedDestination = resolve(uploadDirectory, relativeName)
     if (!isInside(uploadDirectory, requestedDestination)) throw new Error('上传路径超出财务资料目录')
     await mkdir(dirname(requestedDestination), { recursive: true })
-    const destination = await uniqueDestination(dirname(requestedDestination), basename(requestedDestination))
+    const destination = requestedDestination
     const uploadId = randomUUID()
     const temp = join(uploadDirectory, `.dsh-finance-upload-${uploadId}.part`)
     const handle = await open(temp, 'wx', 0o600)
@@ -154,14 +157,21 @@ export class FinanceFilesService extends TypertRemoteService {
     if (!upload || upload.root !== root) throw new Error('上传任务已失效，请重新选择文件')
     if (upload.busy) throw new Error('文件仍在写入，请稍候重试')
     if (upload.received !== upload.size) throw new Error(`文件尚未上传完整：${upload.received}/${upload.size}`)
-    await rename(upload.temp, upload.destination)
-    this.uploads.delete(request.uploadId)
-    const info = await stat(upload.destination)
-    return {
-      relative: relative(root, upload.destination).split(sep).join('/'),
-      name: basename(upload.destination),
-      size: info.size,
-      modifiedAt: info.mtimeMs,
+    upload.busy = true
+    try {
+      const destination = await publishUpload(upload.temp, dirname(upload.destination), basename(upload.destination))
+      this.uploads.delete(request.uploadId)
+      // Cleanup failure must not turn a successful upload into a retry/duplicate.
+      await unlink(upload.temp).catch(() => {})
+      const info = await stat(destination)
+      return {
+        relative: relative(root, destination).split(sep).join('/'),
+        name: basename(destination),
+        size: info.size,
+        modifiedAt: info.mtimeMs,
+      }
+    } finally {
+      upload.busy = false
     }
   }
 
