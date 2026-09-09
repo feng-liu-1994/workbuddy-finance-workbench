@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { TYPERT_REMOTE } from './contract.js'
 import { FinanceDashboard } from './finance-dashboard.jsx'
 import { FINANCE_DASHBOARD_STYLES } from './finance-dashboard-styles.js'
+import { WORKBENCH_POLISH_CSS } from './workflow-tools.jsx'
 import { fileKind, filterFiles, matchScenarioFiles, summarizeFiles } from './ui-helpers.js'
 import { composeFinanceLaunch, composeFinanceTask, mergeFinanceLaunchDraft } from './task-prompt.js'
 
@@ -362,7 +363,7 @@ function FinancePanel({ sessionId, input, inputActions, remote, onClose, isOpen 
 }
 
 function createFinanceController() {
-  let snapshot = { open: false, bridge: undefined }
+  let snapshot = { open: new URLSearchParams(window.location.search).get('workbench') === 'finance', bridge: undefined }
   const listeners = new Set()
   const publish = next => { snapshot = next; for (const listener of listeners) listener() }
   return {
@@ -517,6 +518,7 @@ html[data-dsh-finance-active] [data-pane='conversation']>:not([data-dsh-finance-
 @media(prefers-reduced-motion:reduce){.dfinance_panel *,.dfinance_sidebarEntry{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 `
   style.textContent += FINANCE_DASHBOARD_STYLES
+  style.textContent += WORKBENCH_POLISH_CSS
   document.head.appendChild(style)
 }
 

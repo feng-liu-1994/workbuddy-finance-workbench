@@ -43,7 +43,7 @@ function WorkBuddyFinanceApp() {
       return undefined
     }
     const app = new App(
-      { name: 'workbuddy-finance-workbench', version: '2.5.0' },
+      { name: 'workbuddy-finance-workbench', version: '2.6.0' },
       {},
       { autoResize: true },
     )

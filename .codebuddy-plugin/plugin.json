@@ -1,6 +1,6 @@
 {
   "name": "workbuddy-finance-workbench",
-  "version": "2.4.0",
+  "version": "2.6.0",
   "description": "面向财务人员的完整交互式工作台：20 个模块、异常责任闭环、月结控制、本机备份和 25 个 AI 工作流。",
   "author": {
     "name": "feng-liu-1994"

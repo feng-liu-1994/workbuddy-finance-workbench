@@ -1,6 +1,6 @@
 {
   "name": "dsh-finance-workbench",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "WorkBuddy 与 DeepSeek Harness 可视化财务工作台 — 20 个模块、异常闭环和 25 个 AI 工作流",
   "license": "MIT",
   "homepage": "https://github.com/feng-liu-1994/workbuddy-finance-workbench#readme",
@@ -63,7 +63,7 @@
     "catalog": "node scripts/generate-agent-catalog.mjs",
     "test": "node --test test/*.test.mjs",
     "security:scan": "node scripts/security-scan.mjs",
-    "check": "npm run catalog && npm run test && npm run build && npm run security:scan",
+    "check": "npm run catalog && npm run build && npm run test && npm run security:scan",
     "verify:release": "bash scripts/verify-release.sh",
     "package:release": "bash scripts/package-release.sh",
     "prepack": "npm run check"

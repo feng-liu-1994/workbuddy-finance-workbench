@@ -1,0 +1,398 @@
+{
+  "version": "2.6.0",
+  "workflowCount": 25,
+  "files": [
+    {
+      "path": ".codebuddy-plugin/plugin.json",
+      "sha256": "a96afa77f0e80b750931f4028ac7dab20b3403edd7ae755923294775fb586c72"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "sha256": "d28603f7ad2d1e41771ce6bcd0616dcfcb177b45c55f7bf73e03e2bf63e40fa5"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "sha256": "7af5121191dbca30a96708985c1c7d5ea3f3aefcfce0755fd8908339213dacd6"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "7666ea5ca7b1bc319a8d5982799b1ec693a3582eeddacdf94927f92dce90f77f"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "18c822cefaea1cd9dd1701a6c71e87f5d305a998c918388ff980873bd21aa052"
+    },
+    {
+      "path": ".mcp.json",
+      "sha256": "9d6b85b2f4c3deb1cb3935bdc5ac149f5e2da0b7431dab6ee6fd896f53a22d9d"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "e694e44e6a523683182c87e89d588f3bde01254b90fed7f0d766d5420d592a58"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "937f960fb1870b0f68b68bed0472c31e59962a8834c1e39521eff3428f349069"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "e802e88d029fd038fcf16158b66476ce6498c69258e7156e6f6b97c67be8fb07"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cca39cca9a6cd0c0b1b2c4a86a0200c09b104a7b06f054190f5035e0ed3a713e"
+    },
+    {
+      "path": "README.md",
+      "sha256": "93785318d1eeba74992facbae8856f1925422a943a9548bdfd7949b90e23094a"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "5b0c865293c713fdbe1010223d84ef42e0c87b3e3fc87a79e92f92eb6eb9d23d"
+    },
+    {
+      "path": "agents/finance-workbench/SKILL.md",
+      "sha256": "59bdf43da67ced6b7985059e0b21c20fb13fd4e7cac920a097dccd4ac926c802"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/01-excel-cleaning.md",
+      "sha256": "bd43580682aa6c0b1441615f4b4d1c714dd16234a95ec0dc4548f544532e8299"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/02-excel-merge.md",
+      "sha256": "9f6757a0e003093e7121127492238042937a58b1ea26d1b54f15f84ed0873794"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/03-expense-summary.md",
+      "sha256": "f8cd91c5df67393245b2937f24c435a75d5587f157ac968dca93bbf1e9f2a682"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/04-expense-duplicate-check.md",
+      "sha256": "41f942e1482105e67ffe349d345736d91fd4d7e6fb46cc07e967e48d6df6bebd"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/05-bank-reconcile.md",
+      "sha256": "80d1b9428129c9941964f275077d16f7707f3b51071a1d57e7bc9857c39478c2"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/06-order-cash-invoice.md",
+      "sha256": "f3af034894d5054538807e1496b92bb7b321763a320edf9e97b4fa69b9697909"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/07-ar-aging.md",
+      "sha256": "3ddef1b02763796657429bc9df858c518a256cc674e358aaa559d64b1ee8ec30"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/08-ap-schedule.md",
+      "sha256": "06a13e863cdbbc957f9c9bdce3877dd85b36feb6f3936b182869a04a0473c7ba"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/09-invoice-ledger.md",
+      "sha256": "6c9f4abae311d003382bb8d9c1835630a10acd9030a9964374e1072976924d7b"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/10-invoice-payment-match.md",
+      "sha256": "2fc4cbf2d24766e4bbe119868c669699acf9160a5565d5ff50498014d1411a87"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/11-vat-monthly-check.md",
+      "sha256": "5816b77c195694d4e78e9118043272da9e21d7569e70e59435c0c9a00fc8d603"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/12-fixed-assets.md",
+      "sha256": "ae03129c9c84c0d1f2d6fe50d0784cbc12ff3b81806402135de19b364d1d87e6"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/13-inventory-check.md",
+      "sha256": "3f9bee2407c3af7dca0ab81efd969ee468da3a51b8c4f6ae9635a9bb989b3b2f"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/14-payroll-check.md",
+      "sha256": "16ac85b101fee1fd5e96adba74ac87db9b96e9d800d2b55bf80f6d0dd792801a"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/15-month-close-completeness.md",
+      "sha256": "44d7619487a126f7c068b79164a16c95ee8da87fe1b951b8ec29119628bada68"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/16-monthly-management-report.md",
+      "sha256": "dd6406437e7193ba9ac70fb0cd65f9e55d4306a30708f9a8d1160be489f2ce13"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/17-budget-variance.md",
+      "sha256": "08ed26f0e7aac961f15e005f87361c4a5a455760f2e45d7e4e2e476df0c637a8"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/18-cost-reduction.md",
+      "sha256": "004b78eaacff5e6d7a4f1ccdd93c955109863423a2754dc307d3e1d01a9be635"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/19-cashflow-forecast.md",
+      "sha256": "ba46640ad0792078ab7e7d34c41840538b4df651ce73cde16dad8ff25c36def0"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/20-management-summary.md",
+      "sha256": "b179f893edbf1cc4bb51c2b8ab2b0aee729e08fbb04648ef52ebb5a5145ee09b"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/21-full-table-anomaly.md",
+      "sha256": "b8923504c51eea11cc19ba20f8f5c6d0c1585abbaa8a685ec9ef5ff18476a64a"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/22-voucher-archive.md",
+      "sha256": "50add161ea4b33c443011da433a54201273e7ba102c77f9bc85b301a6d8c875e"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/23-contract-terms.md",
+      "sha256": "f829096cd428a02866d2130dda4b52933d551c23e016a37912c14282685bb1ac"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/24-local-automation.md",
+      "sha256": "b08cd79ffc5455cd9070b7381582ba38e5824d0327fd3c9a7fd522f1e35cc87b"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/25-policy-knowledge.md",
+      "sha256": "1f3e433c62fee60d2c6fea60ffa6bb388c25d1ba2814a91cf48032f62bcaba02"
+    },
+    {
+      "path": "agents/finance-workbench/references/prompts/README.md",
+      "sha256": "f9476333f837ec0a58cede2f63abbda334101e4e682aea401f95761623408bba"
+    },
+    {
+      "path": "agents/finance-workbench/references/safety.md",
+      "sha256": "886d24068e648bfd71837291eca580127408d766f3718e0d1fc694f6d1067cc3"
+    },
+    {
+      "path": "agents/finance-workbench/references/workflows.json",
+      "sha256": "6208b80ea3eaa93549a0549e11a114b4e29e7752e91104ff7533f9b61c1b649c"
+    },
+    {
+      "path": "agents/finance-workbench/references/workflows.md",
+      "sha256": "199907e0cd43d12217c7c3c1c15189c46e6ccfbd17210cc249b78ea46f12b14c"
+    },
+    {
+      "path": "agents/finance-workbench/templates/task-brief.md",
+      "sha256": "984b73d47ea2272c18ee9d0c44998e64e969f568d0665fcc818206a520bb1e0a"
+    },
+    {
+      "path": "build.mjs",
+      "sha256": "e313968eb25ad783a19cd588a34adac6805ee8aba90edfcb3049d7e0cc6500e7"
+    },
+    {
+      "path": "cordis.patch.yml",
+      "sha256": "8c734f39e7269fe8c74797d6f4b9c9d9e0376bf76650a3f68a513a08e415d315"
+    },
+    {
+      "path": "docs/INSTALL_AGENT.md",
+      "sha256": "f9a0be36ab3ad5e558506b84d439f8c390f610ef8e47ba573448ed23760ecbd4"
+    },
+    {
+      "path": "docs/INSTALL_DSH.md",
+      "sha256": "7f88c3cebb6f5bc88f8126b406fbbf754262bcaead9679fa1116bad7ba32b385"
+    },
+    {
+      "path": "docs/INSTALL_WORKBUDDY.md",
+      "sha256": "03fe6a4eb74db39dd8ecc9d3f8dc348134274615daaf9c4fcdcc58f45624e4b8"
+    },
+    {
+      "path": "docs/REPRODUCE.md",
+      "sha256": "18905b3e73d52455555d42f1cdf3b3f8c513364b50aba441858f215eb9176b03"
+    },
+    {
+      "path": "docs/TROUBLESHOOTING.md",
+      "sha256": "56a36fc37dd2f53f6e078fd3fd68aa223c5373644df0af189a90e17ec2b0c7b9"
+    },
+    {
+      "path": "docs/releases/v2.0.0.md",
+      "sha256": "985b416df7afc70cf017b6cc717231d763976e761232eea774648320dda58917"
+    },
+    {
+      "path": "docs/releases/v2.1.0.md",
+      "sha256": "3bbdae40266144df8e6c8d1df8a6b86a9f055c8e728b9f1bc8e9b6594e4d0af4"
+    },
+    {
+      "path": "docs/releases/v2.2.0.md",
+      "sha256": "84b30425a94f2f59d88347793e45773447ef9b3f3f74c905ed03cbdea60fc301"
+    },
+    {
+      "path": "docs/releases/v2.3.0.md",
+      "sha256": "b6c6bb64423c5e211ca5871827f4e7c1bd93ecf062616e216c893b5e9cea91e1"
+    },
+    {
+      "path": "docs/releases/v2.4.0.md",
+      "sha256": "91cf0e6bd2897f65ecd393dcbf2d7ed3dbfdc0ae31f1129bd2547943c97b2e4f"
+    },
+    {
+      "path": "docs/releases/v2.5.0.md",
+      "sha256": "88017a60d17754df91cd4a1819ff402dee691a73fda270307635adc1c791297a"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26"
+    },
+    {
+      "path": "package.json",
+      "sha256": "99c71ba76de4ef69918d74bc97695aabbe618638791ec8ad5e618de9fbc02054"
+    },
+    {
+      "path": "scripts/build-workbuddy-app.mjs",
+      "sha256": "6dd99eea0bd509de87b6ed55b68a33c2022e5dc4901a30f276d8a807a4a4be56"
+    },
+    {
+      "path": "scripts/generate-agent-catalog.mjs",
+      "sha256": "1578b4732427f11a01dde8bd157cc73e1988576fc5ac8de4a4f89e23604f789d"
+    },
+    {
+      "path": "scripts/generate-reproduction.mjs",
+      "sha256": "934cab4a1dee7272483f0711805dce7e4962236f51c52b421a40c8d1f86f734f"
+    },
+    {
+      "path": "scripts/install-agent.ps1",
+      "sha256": "f643ff068a7b33aca707bb7fce321f43b8857e140772880d65ce52ffbc8c72ed"
+    },
+    {
+      "path": "scripts/install-agent.sh",
+      "sha256": "ee6140f1f40162ed4714be209c9d998518a87fa1686c782366df11dccf61c3bb"
+    },
+    {
+      "path": "scripts/install-dsh.sh",
+      "sha256": "583ba749b54b97d4a6a50f62feda4813311d116bad88cac86c4803d85d92d16c"
+    },
+    {
+      "path": "scripts/install-workbuddy-app.ps1",
+      "sha256": "d34819af5bdafe9abd1be4bc5140383a28c8dd3f5237e4c39817b389312c2ebd"
+    },
+    {
+      "path": "scripts/install-workbuddy-app.sh",
+      "sha256": "0acc3042a404f3cad6af7914fbfed4a2a364bcd6b8715bbc35af5e2ce1916518"
+    },
+    {
+      "path": "scripts/package-release.sh",
+      "sha256": "a7f18a2bec8fc3c22c0043c372461a554412817aec8d86a43cf024532e0a67b5"
+    },
+    {
+      "path": "scripts/security-scan.mjs",
+      "sha256": "85bc7e4ebdbdb3af56fa407670ad59741d30582afce4b34bc45da5de75383e10"
+    },
+    {
+      "path": "scripts/uninstall-agent.sh",
+      "sha256": "3e1e4615f9830ff359976f15460f820662123e2a2d89ffab5414a2959d007ba0"
+    },
+    {
+      "path": "scripts/uninstall-workbuddy-app.ps1",
+      "sha256": "f68df3b2a17ec0bae78ea133a3be89604d70bfe652bf485dae258871eb50baed"
+    },
+    {
+      "path": "scripts/uninstall-workbuddy-app.sh",
+      "sha256": "a164e374d2d7244e61e9539855db2f72da34661ad5b49acf4520d8a107d7840d"
+    },
+    {
+      "path": "scripts/verify-release.sh",
+      "sha256": "db28bd3c91a69d78efdcab34c15d541fb9e43a65b7fc631f2e1b6cd956fe502b"
+    },
+    {
+      "path": "src/client.jsx",
+      "sha256": "64e7cbbea3478d4965d169501d75b199d3bb411fa818cbf15020101e0a5d986f"
+    },
+    {
+      "path": "src/contract.js",
+      "sha256": "70636f9a8f4601b3edbb0b193ccb20f65761a19bb97f9a456dc2f65262cb5323"
+    },
+    {
+      "path": "src/finance-dashboard-helpers.js",
+      "sha256": "ee06f651218535dde90c533777fc726338c13bbbbd9dff53618c1982edf30903"
+    },
+    {
+      "path": "src/finance-dashboard-styles.js",
+      "sha256": "44349ca33af9bd8e8a0a39c01c8d748e0b5675f8b969d0b9675d8ae88f073bf3"
+    },
+    {
+      "path": "src/finance-dashboard.jsx",
+      "sha256": "18adba8dc6b7aa92c935efff0362a2d10645d57914deb52eaabca3d5a419088b"
+    },
+    {
+      "path": "src/finance-data.js",
+      "sha256": "ed1551a5d70770ef53a81bda0309953caed1b5b24b17e26ea61a827350f6345c"
+    },
+    {
+      "path": "src/index.js",
+      "sha256": "cd0336debed4ceb75bcbf24b3d865f8d2306e2f3ad89830d32303743bc6f7ce0"
+    },
+    {
+      "path": "src/task-prompt.js",
+      "sha256": "f954ba3f1342b6bf192447a9209a42d2466715844f8a32ed7e37e492b2005fdd"
+    },
+    {
+      "path": "src/ui-helpers.js",
+      "sha256": "08b8b246d04673af348d745ba88c4cd678110efafa38ac0e4cff52965205d546"
+    },
+    {
+      "path": "src/workbuddy-mcp-server.mjs",
+      "sha256": "8571ca1b349e11c97f70ea06c8a2cdf3f8388729c9a62a519901a151654faeed"
+    },
+    {
+      "path": "src/workbuddy-widget.jsx",
+      "sha256": "20437e909148dda4f7ab1473d01696210f97836ac76c8112193b2c630d585191"
+    },
+    {
+      "path": "src/workflow-tools.js",
+      "sha256": "0a232ece020ce764feeb1795af9a846f1131cf8eec419f246552e7085ae131f9"
+    },
+    {
+      "path": "src/workflow-tools.jsx",
+      "sha256": "c3868c7430a502defc8a98c07ff368f91d71fbe26456a07f909d8e23d9144d54"
+    },
+    {
+      "path": "test/finance-dashboard-helpers.test.mjs",
+      "sha256": "2c8d5193878913045a9b469650034010e2eea8b0c18203c28692e5509b3681bc"
+    },
+    {
+      "path": "test/finance-data.test.mjs",
+      "sha256": "d66887509af22272175b63f7f798e9f1a4139aa61adf13f398bd0cc0d7d49aac"
+    },
+    {
+      "path": "test/helpers.test.mjs",
+      "sha256": "a72d672bcb54ca8529610cbd0b9e5160ad576b9c1055c21a83432b5cc3d8478b"
+    },
+    {
+      "path": "test/public-release.test.mjs",
+      "sha256": "27066ffc34513d01f4e52c0b421c34ad31d0bf4bd96cd149585bd4dc0a2a50ba"
+    },
+    {
+      "path": "test/reproduction.test.mjs",
+      "sha256": "91ae4c7bf1ff2ae7dbfe56f0dc9c873b21b530f3708dfeaf2a82701cfebd0f97"
+    },
+    {
+      "path": "test/task-prompt.test.mjs",
+      "sha256": "3ff26b29de46ce72222ba57100e7ce970f887ab9b394ca134e6ece889b4e9bcb"
+    },
+    {
+      "path": "test/ui-helpers.test.mjs",
+      "sha256": "cd43e817436d450cd505672ab347160e5fe8dd754207ea9fbf25735c85595d69"
+    },
+    {
+      "path": "test/upload.test.mjs",
+      "sha256": "b81527c83704f7b86d4f592bc97080be4ad5d16ae4b86a211047011fdb44c146"
+    },
+    {
+      "path": "test/workbuddy-app.test.mjs",
+      "sha256": "3f7c8b5080e1682c208c1df2a0e59f52184aff7a9a1aebf47c451d7e462adc19"
+    },
+    {
+      "path": "test/workflow-snapshot.test.mjs",
+      "sha256": "ee05286f21d8c046167f20b6f651d1b6af17bc0095bb3611f60834a60bc3e63a"
+    },
+    {
+      "path": "test/workflow-tools.test.mjs",
+      "sha256": "1fbb7ec3418702208cc12c723be464d8760db58f3e2c9ae52cd744ec2292e282"
+    },
+    {
+      "path": "卸载 WorkBuddy 财务工作台.command",
+      "sha256": "7a886994bae7cd0fd3e13a495e21a266edabfec4223078710defd6c0f32054d8"
+    },
+    {
+      "path": "安装 WorkBuddy 财务工作台.command",
+      "sha256": "56c17c1fe9a7633e1585794e16bc511a5c4f798b2b925571e0b9c3f53e940982"
+    }
+  ]
+}

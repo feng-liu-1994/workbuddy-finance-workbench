@@ -9,7 +9,7 @@ const APP_MIME = 'text/html;profile=mcp-app'
 const currentDirectory = dirname(fileURLToPath(import.meta.url))
 const widgetHtml = readFileSync(join(currentDirectory, 'widget.html'), 'utf8')
 
-const server = new McpServer({ name: 'workbuddy-finance-workbench', version: '2.5.0' })
+const server = new McpServer({ name: 'workbuddy-finance-workbench', version: '2.6.0' })
 
 server.registerTool('show_finance_workbench', {
   title: '打开 WorkBuddy 财务工作台',
@@ -17,7 +17,7 @@ server.registerTool('show_finance_workbench', {
   _meta: { ui: { resourceUri: APP_URI } },
 }, async () => ({
   content: [{ type: 'text', text: 'WorkBuddy 财务工作台已打开。终端环境会自动降级为本段文字；Web UI 会渲染完整交互界面。' }],
-  structuredContent: { version: '2.5.0', modules: 20, workflows: 25, prompts: 25, mode: 'interactive-widget' },
+  structuredContent: { version: '2.6.0', modules: 20, workflows: 25, prompts: 25, mode: 'interactive-widget' },
   _meta: { ui: { resourceUri: APP_URI } },
 }))
 

@@ -1,3 +1,5 @@
+import { formatTaskBrief } from './workflow-tools.js'
+
 export const FINANCE_PROFILE = `你是用户的财务执行助理。你要在当前工作区内完成真实文件处理，而不是只给方法说明。
 通用口径：金额精确到分；日期统一为 YYYY-MM-DD；百分比保留两位小数；所有计算必须可追溯到源文件、源工作表和源行；无法确认的内容标注“需人工复核”，禁止猜测。OCR 结果不得直接作为入账或付款依据。`
 
@@ -28,7 +30,7 @@ export function composeFinanceTask(scenario, { includeChecklist = true } = {}) {
   const sections = [
     `【财务任务包】${scenario.title}`,
     FINANCE_PROFILE,
-    BEGINNER_BRIEF,
+    formatTaskBrief(scenario.taskBrief) || BEGINNER_BRIEF,
     `【所需资料】\n${inputs.map(item => `- ${item}`).join('\n')}`,
     `【交付成果】\n${outputs.map(item => `- ${item}`).join('\n')}`,
     CONTROL_PROTOCOL,

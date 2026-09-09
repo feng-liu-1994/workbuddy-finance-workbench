@@ -10,7 +10,7 @@ await mkdir(promptRoot, { recursive: true })
 const catalog = {
   product: 'workbuddy-finance-workbench',
   version: 2,
-  productVersion: '2.5.0',
+  productVersion: '2.6.0',
   generatedAt: '2026-08-24',
   sopSteps: SOP_STEPS.map(([number, title, note]) => ({ number, title, note })),
   workflows: FINANCE_WORKFLOWS,

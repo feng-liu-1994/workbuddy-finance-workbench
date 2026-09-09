@@ -24,7 +24,7 @@ test('public package contains beginner docs and agent artifacts', async () => {
   await Promise.all(files.map(file => access(new URL(`../${file}`, import.meta.url))))
   const catalog = JSON.parse(await readFile(new URL('../agents/finance-workbench/references/workflows.json', import.meta.url), 'utf8'))
   assert.equal(catalog.workflows.length, 25)
-  assert.equal(catalog.productVersion, '2.5.0')
+  assert.equal(catalog.productVersion, '2.6.0')
   const promptFiles = (await readdir(new URL('../agents/finance-workbench/references/prompts/', import.meta.url))).filter(file => /^\d{2}-.+\.md$/.test(file))
   assert.equal(promptFiles.length, 25)
   for (const workflow of catalog.workflows) {
