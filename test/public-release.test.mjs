@@ -24,7 +24,7 @@ test('public package contains beginner docs and agent artifacts', async () => {
   await Promise.all(files.map(file => access(new URL(`../${file}`, import.meta.url))))
   const catalog = JSON.parse(await readFile(new URL('../agents/finance-workbench/references/workflows.json', import.meta.url), 'utf8'))
   assert.equal(catalog.workflows.length, 25)
-  assert.equal(catalog.productVersion, '2.6.0')
+  assert.equal(catalog.productVersion, JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version)
   const promptFiles = (await readdir(new URL('../agents/finance-workbench/references/prompts/', import.meta.url))).filter(file => /^\d{2}-.+\.md$/.test(file))
   assert.equal(promptFiles.length, 25)
   for (const workflow of catalog.workflows) {
@@ -51,4 +51,18 @@ test('public defaults use generic demonstration identity', async () => {
   assert.match(dashboard, /canCloseFinanceException/)
   assert.match(prompt, /你是用户的财务执行助理/)
   assert.doesNotMatch(`${dashboard}\n${prompt}`, new RegExp(['永', '模'].join('')))
+})
+
+test('package, lock, MCP App, plugin metadata and Skill share the same version', async () => {
+  const read = file => readFile(new URL(`../${file}`, import.meta.url), 'utf8')
+  const pkg = JSON.parse(await read('package.json'))
+  const lock = JSON.parse(await read('package-lock.json'))
+  const plugin = JSON.parse(await read('.codebuddy-plugin/plugin.json'))
+  const { VERSION } = await import('../src/version.js')
+  assert.equal(lock.version, pkg.version)
+  assert.equal(lock.packages[''].version, pkg.version)
+  assert.equal(plugin.version, pkg.version)
+  assert.equal(VERSION, pkg.version)
+  assert.ok((await read('agents/finance-workbench/SKILL.md')).includes(`version: "${pkg.version}"`))
+  for (const file of ['scripts/workbuddy-install.mjs', 'scripts/uninstall-workbuddy-app.sh', 'scripts/uninstall-workbuddy-app.ps1']) assert.ok(pkg.files.includes(file))
 })

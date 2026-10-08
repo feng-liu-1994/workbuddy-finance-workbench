@@ -36,5 +36,5 @@ test -f "$fixture_home/skills/finance-workbench/SKILL.md"
 WORKBUDDY_HOME="$fixture_home" bash scripts/uninstall-workbuddy-app.sh
 node -e "const c=require(process.argv[1]); if(!c.mcpServers['keep-existing']||c.mcpServers['finance-workbench']) process.exit(1)" "$fixture_home/.mcp.json"
 
-npm pack --dry-run >/dev/null
+npm pack --ignore-scripts --dry-run >/dev/null
 echo "release verification passed"

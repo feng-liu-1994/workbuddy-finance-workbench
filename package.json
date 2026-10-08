@@ -1,6 +1,6 @@
 {
   "name": "dsh-finance-workbench",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "WorkBuddy 与 DeepSeek Harness 可视化财务工作台 — 20 个模块、异常闭环和 25 个 AI 工作流",
   "license": "MIT",
   "homepage": "https://github.com/feng-liu-1994/workbuddy-finance-workbench#readme",
@@ -42,7 +42,12 @@
     "cordis.patch.yml",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "scripts/workbuddy-install.mjs",
+    "scripts/uninstall-workbuddy-app.sh",
+    "scripts/uninstall-workbuddy-app.ps1",
+    "docs",
+    "SECURITY.md"
   ],
   "dsh": {
     "bundle": {
@@ -59,23 +64,27 @@
     }
   },
   "scripts": {
-    "build": "node build.mjs && node scripts/build-workbuddy-app.mjs",
-    "catalog": "node scripts/generate-agent-catalog.mjs",
+    "build": "node scripts/sync-version.mjs && node build.mjs && node scripts/build-workbuddy-app.mjs",
+    "catalog": "node scripts/sync-version.mjs && node scripts/generate-agent-catalog.mjs",
     "test": "node --test test/*.test.mjs",
     "security:scan": "node scripts/security-scan.mjs",
-    "check": "npm run catalog && npm run build && npm run test && npm run security:scan",
+    "check": "npm run catalog && npm run build && npm run reproduce && npm run test && npm run security:scan",
     "verify:release": "bash scripts/verify-release.sh",
     "package:release": "bash scripts/package-release.sh",
-    "prepack": "npm run check"
+    "prepack": "npm run check",
+    "reproduce": "node scripts/generate-reproduction.mjs",
+    "preview": "npm run build && node scripts/preview.mjs",
+    "audit:deps": "npm audit --registry=https://registry.npmjs.org"
   },
   "dependencies": {
     "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.7",
     "esbuild": "^0.28.2",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@modelcontextprotocol/ext-apps": "^1.7.5",
-    "@modelcontextprotocol/sdk": "1.30.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "preact": "^10.29.8"
-  }
+  },
+  "releaseDate": "2026-10-08"
 }

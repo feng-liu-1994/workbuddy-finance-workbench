@@ -1,14 +1,14 @@
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'node:path'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
 const teacher = pkg.name.includes('teacher')
 const title = teacher ? '教师工作台' : '财务工作台'
 const repo = teacher ? 'deepseek-harness-teacher-workbench' : 'workbuddy-finance-workbench'
-const data = await import(path.join(root, teacher ? 'src/teacher-workflows.js' : 'src/finance-data.js'))
-const composers = await import(path.join(root, 'src/task-prompt.js'))
+const data = await import(pathToFileURL(path.join(root, teacher ? 'src/teacher-workflows.js' : 'src/finance-data.js')))
+const composers = await import(pathToFileURL(path.join(root, 'src/task-prompt.js')))
 const workflows = (teacher ? data.TEACHER_WORKFLOWS : data.FINANCE_WORKFLOWS).map(w => ({id:w.id, title:w.title, prompt:teacher ? composers.composeTeacherTask(w) : composers.composeFinanceTask(w)}))
 async function walk(dir) {
   const entries = await readdir(path.join(root,dir),{withFileTypes:true})
