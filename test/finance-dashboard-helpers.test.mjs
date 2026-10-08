@@ -61,3 +61,35 @@ test('module routing exposes focused finance workflows', () => {
   assert.deepEqual(workflowsForView(workflows, 'capital').map(item => item.id), ['budget-variance'])
   assert.deepEqual(workflowsForView(workflows, 'close').map(item => item.id), ['month'])
 })
+
+test('backup validation rejects malformed rows, duplicate IDs and invalid calendar dates before restore', () => {
+  const empty = () => buildFinanceBackup({ profile: { period: '2026-10' }, settings: {}, todos: [], closeTasks: [], favorites: [], fieldDictionary: [] })
+  const todo = { id: 'todo-1', text: '核对流水', category: '对账', due: '2026-10-08', priority: '中', done: false }
+  for (const todos of [[null], [{ ...todo, due: '2026-02-30' }], [{ ...todo, done: 'false' }], [todo, todo]]) {
+    assert.throws(() => parseFinanceBackup({ ...empty(), todos }), /备份/)
+  }
+  assert.throws(() => parseFinanceBackup({ ...empty(), profile: { period: '2026-13' } }), /期间/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), auditLog: [{ id: 'a', at: 'not-a-date' }] }), /时间/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), favorites: [{}] }), /收藏/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), settings: { dateTolerance: 32 } }), /容差/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), exceptions: [{ ...normalizeFinanceException({ title: '待核', due: '2026-10-08' }), status: '已关闭', evidence: '' }] }), /处置证据/)
+  const valid = { ...empty(), todos: [{ ...todo, due: '2028-02-29' }], pinnedFiles: ['财务资料/字段字典.xlsx'], recentWorkflows: ['bank-reconcile'] }
+  assert.deepEqual(parseFinanceBackup(valid).pinnedFiles, valid.pinnedFiles)
+  // Legacy v2 exports without the newly added collections stay readable.
+  delete valid.pinnedFiles; delete valid.recentWorkflows
+  assert.equal(parseFinanceBackup(valid).todos.length, 1)
+})
+
+test('cent precision, invalid dates and missing closure evidence cannot corrupt finance totals', () => {
+  assert.equal(snapshotProfit({ income: 0.3, expense: 0.2 }), 0.1)
+  assert.equal(summarizeFinanceExceptions([{ amount: 0.1 }, { amount: 0.2 }]).amount, 0.3)
+  assert.equal(normalizeTodo({ due: '2026-02-30' }, '2026-10-08').due, '2026-10-08')
+  assert.equal(normalizeFinanceSnapshot({ period: '2026-13' }, '2026-10').period, '2026-10')
+  assert.equal(normalizeFinanceException({ status: '已关闭', evidence: '' }).status, '未处理')
+})
+
+test('CSV export neutralizes formula cells while retaining ordinary Chinese text', () => {
+  const csv = financeExceptionsToCsv([{ title: '=1+1', owner: '\t=1+1', source: '@SUM(A1)', evidence: '+危险公式', category: '对账' }])
+  for (const value of ["'=1+1", "'=1+1", "'@SUM(A1)", "'+危险公式"]) assert.ok(csv.includes(value))
+  assert.ok(csv.includes('"对账"'))
+})

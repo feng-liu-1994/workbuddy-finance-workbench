@@ -5,7 +5,7 @@ profile="web"
 dry_run="false"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --profile) profile="${2:-}"; shift 2 ;;
+    --profile) [[ $# -ge 2 && -n "${2:-}" ]] || { echo "--profile 需要名称" >&2; exit 2; }; profile="$2"; shift 2 ;;
     --dry-run) dry_run="true"; shift ;;
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
@@ -14,6 +14,7 @@ done
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 dsh_base="${DSH_HOME:-$HOME/.dsh}"
+[[ "$profile" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]] || { echo "profile 名称无效" >&2; exit 2; }
 profile_dir="$dsh_base/profiles/$profile"
 profile_package="$profile_dir/package.json"
 
@@ -33,10 +34,15 @@ if [[ "$dry_run" == "true" ]]; then
 fi
 
 cd "$repo_root"
-npm install --ignore-scripts
+npm ci
 npm run check
 
-timestamp="$(date +%Y%m%d-%H%M%S)"
+node -e "const p=require(process.argv[1]); if(!p.dsh?.profile||!Array.isArray(p.dsh.profile.bundles)) process.exit(2)" "$profile_package"
+if ! command -v pnpm >/dev/null 2>&1 && ! command -v corepack >/dev/null 2>&1; then
+  echo "未找到 pnpm 或 corepack；尚未修改 profile 配置。" >&2
+  exit 1
+fi
+timestamp="$(date +%Y%m%d-%H%M%S)-$(node -e 'console.log(require("node:crypto").randomUUID().slice(0,8))')"
 backup="$profile_package.finance-workbench-backup-$timestamp"
 cp "$profile_package" "$backup"
 echo "配置已备份: $backup"

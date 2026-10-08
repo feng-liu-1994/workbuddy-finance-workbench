@@ -4,12 +4,12 @@
 
 ## .codebuddy-plugin/plugin.json
 
-SHA-256: a96afa77f0e80b750931f4028ac7dab20b3403edd7ae755923294775fb586c72
+SHA-256: 9fd72ef613572aef48b98546f3be9a7a96ed2db5448040ad3b1fa9e246ee889a
 
 ~~~~~~text
 {
   "name": "workbuddy-finance-workbench",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "面向财务人员的完整交互式工作台：20 个模块、异常责任闭环、月结控制、本机备份和 25 个 AI 工作流。",
   "author": {
     "name": "feng-liu-1994"
@@ -108,7 +108,7 @@ body:
 
 ## .github/workflows/ci.yml
 
-SHA-256: 7666ea5ca7b1bc319a8d5982799b1ec693a3582eeddacdf94927f92dce90f77f
+SHA-256: a4e682dd37786e9545dde2892c84256669af2fdc677c83b32182c74998eb5fb5
 
 ~~~~~~text
 name: CI
@@ -123,14 +123,31 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
       - run: npm run verify:release
+      - run: npm run audit:deps
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run audit:deps
 
 ~~~~~~
 
@@ -202,10 +219,28 @@ npm run verify:release
 
 ## CHANGELOG.md
 
-SHA-256: 937f960fb1870b0f68b68bed0472c31e59962a8834c1e39521eff3428f349069
+SHA-256: 4e84defc519dbf97fe9acd89c12d3d1d02fc8b8ed44798cc0bc1e71a1b6dcb9b
 
 ~~~~~~text
 # 更新记录
+
+## 2.7.0 - 2026-10-08
+
+- 修复依赖更新后复刻清单过期导致的 CI 失败；构建后自动生成源码上下文与校验清单。
+- 更新 MCP SDK、Zod 和相关传递依赖；官方 npm 审计报告 0 个漏洞项。
+- 上传与工作流写入拒绝符号链接目录，校验分块编码、偏移、工作区归属和下载参数；保留同名并发上传保护。
+- 备份增加资料置顶与最近工作流；逐项检查日期、金额、标识、日志和异常关闭证据，兼容旧 v2 备份。
+- 恢复前保留完整副本，存储写入失败时回滚；新增“下载恢复前副本”和本机保存失败提示。
+- 修复金额显示舍去分位和浮点合计误差；CSV 导出防止文本被解释为公式。
+- Shell / PowerShell 共用安装逻辑，先校验、暂存再切换，失败恢复旧目录；保留其他 MCP 配置及原财务环境设置。
+- 修复 WorkBuddy 指令发送或复制失败时的提示，明确文件索引与附件的关系。
+- 版本号统一来自 package.json；补齐 npm 包的卸载脚本、安装辅助文件与指南。
+- 新增 `npm run preview`；CI 覆盖 Node.js 20 / 22 / 24 与 Windows PowerShell。
+
+## 2.6.0 - 2026-09-09
+
+- 同步本地工作台源码，补充任务要求填写、最近使用和收藏筛选。
+- 增加 25 套工作流的离线复制页面、源码上下文包和 SHA-256 清单。
 
 ## 2.5.0 - 2026-08-24
 
@@ -317,10 +352,14 @@ SOFTWARE.
 
 ## README.md
 
-SHA-256: 93785318d1eeba74992facbae8856f1925422a943a9548bdfd7949b90e23094a
+SHA-256: b220b1f751e8fca78f0335cf61bdbe2bfbc4ea1ef9b70c50f887e5ccb1cd8620
 
 ~~~~~~text
 <div align="center">
+
+> **源码版本 2.7.0**：修复安装回滚、备份完整性、目录越界和依赖漏洞，增加本机预览。见 [升级说明](docs/releases/v2.7.0.md)。下载包版本以 GitHub Releases 为准。
+
+[查看本次全面检查报告与界面验证](docs/AUDIT_2026-10-08.md)。
 
 > **2026-09-09 源码同步 · 2.6.0（公开仓库）**：新增 [AI 精确复刻指南](docs/REPRODUCE.md)、[总提示词](docs/reproduce/MASTER_PROMPT.md)、[25 套完整工作流](docs/reproduce/WORKFLOWS.md) 和 [离线一键复制页面](docs/reproduce/index.html)（下载后双击打开）。复刻包包含源码上下文与 SHA-256 清单；保留原界面源码和锁文件，避免仅凭文字重新设计。
 
@@ -412,7 +451,7 @@ cd workbuddy-finance-workbench
 
 ### 财务控制不是“发现异常”就结束
 
-异常控制台会按风险等级、金额影响和逾期状态排序。没有处置证据的事项不能关闭；任何异常都可以转成待办或导出 CSV。经营快照、待办、月结、异常、收藏、字段字典和审计日志可以整体导出为 JSON 备份。
+异常控制台会按风险等级、金额影响和逾期状态排序。没有处置证据的事项不能关闭；任何异常都可以转成待办或导出 CSV。经营快照、待办、月结、异常、收藏、资料置顶、最近工作流、字段字典和审计日志可以整体导出为 JSON 备份。恢复时逐项校验，自动保留恢复前副本；本机保存失败时显示备份提示。
 
 ### 新手第一次使用
 
@@ -460,7 +499,10 @@ test/                       单元、协议与发布完整性测试
 ```bash
 npm ci
 npm run verify:release
+npm run audit:deps
 ```
+
+仅查看界面可执行 `npm run preview`，然后打开 [本机预览](http://127.0.0.1:4173)。预览可管理本机台账、备份与提示词；运行 AI 工作流需将指令粘贴到 AI 对话并添加附件。
 
 发布校验覆盖：20 个导航模块、25 个工作流、异常关闭门槛、目录穿越防护、备份格式、WorkBuddy MCP 协议、256 KB Widget 上限、隔离目录安装/卸载、公开文件脱敏扫描、生产构建和 npm 发布清单。
 
@@ -513,7 +555,7 @@ SHA-256: 5b0c865293c713fdbe1010223d84ef42e0c87b3e3fc87a79e92f92eb6eb9d23d
 
 ## agents/finance-workbench/SKILL.md
 
-SHA-256: 59bdf43da67ced6b7985059e0b21c20fb13fd4e7cac920a097dccd4ac926c802
+SHA-256: e4b2c2d9829377833138bd19259753a274ae224cf35deb003b693b6a92017b19
 
 ~~~~~~text
 ---
@@ -521,7 +563,7 @@ name: finance-workbench
 description: 面向财务人员的受控自动化工作流。用于收入、应收应付、报销、资金预算、资产、税务发票、工资、对账、成本、报表分析、投资、月结、审计与财务归档；要求字段口径、异常清单、结果校验、人工复核和处理留痕。
 license: MIT
 metadata:
-  version: "2.5.0"
+  version: "2.7.0"
   repository: "https://github.com/feng-liu-1994/workbuddy-finance-workbench"
 ---
 
@@ -2306,14 +2348,14 @@ SHA-256: 886d24068e648bfd71837291eca580127408d766f3718e0d1fc694f6d1067cc3
 
 ## agents/finance-workbench/references/workflows.json
 
-SHA-256: 6208b80ea3eaa93549a0549e11a114b4e29e7752e91104ff7533f9b61c1b649c
+SHA-256: 672ad92d0f49539e843744c2b3d7b9029a8ec415265f22ead46d279e5f22e831
 
 ~~~~~~text
 {
   "product": "workbuddy-finance-workbench",
   "version": 2,
-  "productVersion": "2.6.0",
-  "generatedAt": "2026-08-24",
+  "productVersion": "2.7.0",
+  "generatedAt": "2026-10-08",
   "sopSteps": [
     {
       "number": "01",
@@ -4303,6 +4345,91 @@ SHA-256: 8c734f39e7269fe8c74797d6f4b9c9d9e0376bf76650a3f68a513a08e415d315
 
 ~~~~~~
 
+## docs/AUDIT_2026-10-08.md
+
+SHA-256: 3e6f7d2d8a6ecb3de3c0fb63d657fa8b66caa2989a9085a1171c1a2a7c780d23
+
+~~~~~~text
+# 财务工作台全面检查与升级报告
+
+检查日期：2026-10-08。基线为 `main` 的 `c24d985`（v2.6.0），升级版本为 **v2.7.0**。升级前保留了完整 Git 历史备份；没有安装到现有宿主，也没有重启用户正在使用的应用。
+
+## 检查结论
+
+原有 20 个业务模块、25 个完整工作流及 WorkBuddy MCP App、DSH UI 插件、通用 Agent Skill 三种入口均保留。资料搜索、筛选、置顶、引用、下载及任务要求仍可使用。
+
+本次修复了 CI 复刻清单过期、安装失败破坏旧目录、备份字段遗漏、异常与日期校验不足、存储失败不提示、金额尾差、CSV 公式文本、目录符号链接越界和复制结果误报等问题。源码、构建产物、版本元数据、文档和安装包一起更新。
+
+## 发现与修复
+
+| 范围 | 原有问题 | 修复与证据 |
+|---|---|---|
+| 依赖 | 官方 npm 审计发现 5 个漏洞项，包含高危和严重项 | MCP SDK 更新至 1.32.1，更新 Zod 与相关传递依赖；同一官方源复审为 0 漏洞 |
+| CI | 依赖变化后源码 SHA-256 清单过时，使既有 CI 测试失败 | `check` 先构建并刷新复刻包，再逐项验证完整性；增加 Linux Node 20/22/24 和 Windows Node 24 检查 |
+| 版本 | 多处硬编码版本，容易出现宿主、Skill 与包版本不一致 | 版本从 `package.json` 同步生成，自动检查锁文件、插件、MCP App 和 Skill |
+| 文件写入 | 上传子目录、临时文件或工作流目录可能被符号链接指向工作区外 | 逐层检查普通目录、真实路径和临时文件；分块写入前复检；上传与工作流快照均有回归测试 |
+| 文件请求 | 非法分块与下载偏移需要在实际方法中再次校验 | 校验 Base64、长度、顺序、工作区归属和偏移；限制未完成上传数量；忙碌上传不被超时清理 |
+| 安装与卸载 | 旧实现可能在发现配置损坏之前替换已有应用 | Shell 与 PowerShell 共用先预检、暂存、独立备份、切换、失败回滚逻辑；保留其他 MCP 配置和用户自定义财务环境配置 |
+| JSON 备份 | 没有包含资料置顶和最近工作流；损坏条目可能导致界面出错 | 保留 v2 格式并补齐字段；校验日期、标识、状态、证据、金额与列表；旧备份缺可选字段时保留当前记录 |
+| 恢复过程 | 逐项写入失败可能留下一半恢复的数据 | 写入前保存恢复前副本；失败回滚已改字段；增加副本下载入口；权限持续拒绝导致回滚失败时明确告知 |
+| 本机存储 | 损坏数据及权限、容量错误被忽略；快速刷新可能丢主题 | 损坏原存储不被默认值覆盖；修改后立即保存；包括完全拒绝存储访问在内的故障显示备份提示 |
+| 异常闭环 | 已关闭异常删除证据后仍保持关闭 | 缺少处置证据时禁止关闭，删除证据后重新打开并记录操作 |
+| 金额和 CSV | 两位分值显示不稳定，浮点合计可能出现尾差，文本可能被表格当公式 | 金额按分处理、统一两位小数；公式样式文本加保护前缀 |
+| Widget | 复制失败仍可能报告成功，引用选择未进入实际指令 | 对发送和复制结果分别检查；引用子集与完整任务要求进入实际提示词；资料索引上限明确显示 |
+| 发布包 | npm 包缺配套卸载脚本与共用安装文件 | 补齐安装辅助文件、卸载脚本和文档；分别生成 macOS、Windows、Agent、npm 包及 SHA-256 清单 |
+
+MCP SDK 漏洞依据见 [GitHub 官方安全公告](https://github.com/advisories/GHSA-6qxp-vccf-f47h)。依赖更新保留 DSH 协议、MCP Apps 和 Preact 的现有兼容版本线，避免无证据切换宿主协议。
+
+## 验证记录
+
+- **54 项自动测试**：业务工具、上传防覆盖与越界、提示词、备份校验、损坏存储、拒绝存储、恢复回滚、安装器、复制、版本一致性、MCP stdio 和复刻包完整性。
+- `npm ci`、`npm run verify:release`、公开内容扫描、包内容检查和安装/卸载临时目录验收。
+- `npm run audit:deps` 使用官方 npm 源，结果为 **0 vulnerabilities**。原镜像审计接口不支持该请求，未将接口错误视为安全通过。
+- 桌面真实 Chromium：20 个模块可导航，25 个工作流可打开；25 份复制文本逐字等于源码组合器输出；填写的任务要求与引用资料进入启动指令。
+- 4 个主题切换后立即刷新，选择仍保留；合成收入 123.45、支出 23.40，利润显示 **100.05**。
+- 资料选择、搜索、置顶、引用、下载完成；下载内容与合成原文件完全一致。
+- 异常无证据不可关闭，补证后可关闭，删除证据后重新打开；CSV 可导出。
+- 备份包含置顶和最近记录；非法备份保留现状；有效备份恢复；恢复前副本可下载。
+- 模拟存储容量失败、损坏存储和两种复制方法同时失败，均显示实际失败提示。目标功能浏览器错误为 **0**。
+- **390px 窄屏**：页面、文档和内容宽度均为 390px，没有横向溢出。截图仅含合成数据。
+
+CI 配置已加入跨平台和 Node LTS 验证；GitHub 实际运行结果以升级 PR 的 Checks 为准。
+
+## 界面证据
+
+桌面：
+
+![v2.7.0 桌面工作台](images/v2.7.0-desktop.png)
+
+390px 窄屏：
+
+![v2.7.0 窄屏备份页面](images/v2.7.0-mobile.png)
+
+保存失败提示与导出入口：
+
+![v2.7.0 保存失败提示](images/v2.7.0-storage-warning.png)
+
+## 使用与恢复
+
+```bash
+npm ci
+npm run preview
+```
+
+在浏览器打开 `http://127.0.0.1:4173`。正式安装使用 [WorkBuddy 安装指南](INSTALL_WORKBUDDY.md)。旧版 JSON 备份仍使用 v2 格式，导入前先导出当前备份。
+
+安装器保留配置、应用和 Skill 的独立备份目录；不要在未核对之前清理这些副本。财务 JSON 备份包含设置与台账，不包含原始财务文件；原文件须另行保存。
+
+## 尚待宿主验收的部分
+
+独立 Widget 预览、MCP stdio 测试和临时目录安装已验证。真实 WorkBuddy / DSH 的插件加载、对话输入框填入、附件处理和 AI 实际执行仍需在对应宿主内验收，不能由独立预览替代。
+
+DSH 的旧 Shell 安装器针对现有 Web profile 布局；官方 Desktop 使用宿主管理入口。本次没有改动用户现有模型、登录状态、聊天记录、工作区或财务原件。
+
+代码提交与安装包生成不等于已合并 main 或正式发布 Release；下载页面在合并发布前仍以已发布版本为准。
+
+~~~~~~
+
 ## docs/INSTALL_AGENT.md
 
 SHA-256: f9a0be36ab3ad5e558506b84d439f8c390f610ef8e47ba573448ed23760ecbd4
@@ -4413,12 +4540,12 @@ Agent Skill 不会帮你配置模型账号，也不会读取 API Key。请在目
 
 ## docs/INSTALL_DSH.md
 
-SHA-256: 7f88c3cebb6f5bc88f8126b406fbbf754262bcaead9679fa1116bad7ba32b385
+SHA-256: 8c0465470ea9414b2899d2349468ff01a3dc6fafa1e6bafd85659806dfef8661
 
 ~~~~~~text
 # DeepSeek Harness 完整工作台安装
 
-该方式安装完整的可视化财务工作台。开始前请确认 DeepSeek Harness 已能正常打开。
+以下脚本适用于已有 `dsh.profile.bundles` 的 Web profile。Desktop 用户应通过当前宿主的插件管理入口安装，不要把 Web 配置或 node_modules 复制到 Desktop profile。该方式安装完整的可视化财务工作台。开始前请确认 DeepSeek Harness 已能正常打开。
 
 ## 一键安装
 
@@ -4497,10 +4624,10 @@ package.json.finance-workbench-backup-20260821-120000
 
 ## 从 GitHub Release 安装
 
-Releases 提供 `dsh-finance-workbench-2.5.0.tgz`。这是构建完成的 npm 安装包，适合不想在目标机器编译源码的用户。下载后可在 profile 目录安装：
+发布时会提供 `dsh-finance-workbench-2.7.0.tgz`。这是构建完成的 npm 安装包，适合不想在目标机器编译源码的用户。下载后可在 profile 目录安装：
 
 ```bash
-pnpm add /下载目录/dsh-finance-workbench-2.5.0.tgz
+pnpm add /下载目录/dsh-finance-workbench-2.7.0.tgz
 ```
 
 还需要确认 profile 的 `dsh.profile.bundles` 中包含 `dsh-finance-workbench`。新手建议优先使用一键安装脚本。
@@ -4509,7 +4636,7 @@ pnpm add /下载目录/dsh-finance-workbench-2.5.0.tgz
 
 ## docs/INSTALL_WORKBUDDY.md
 
-SHA-256: 03fe6a4eb74db39dd8ecc9d3f8dc348134274615daaf9c4fcdcc58f45624e4b8
+SHA-256: 3ed8270dc4ca4e827b28628116a7e199927856a5f7258468f6e7511ab4dad482
 
 ~~~~~~text
 # WorkBuddy 完整财务工作台安装指南
@@ -4602,12 +4729,13 @@ cd workbuddy-finance-workbench
 
 ## 安装器具体做了什么
 
-1. 检查 Node.js 版本和安装包完整性。
-2. 把图形应用复制到 `~/.workbuddy/apps/finance-workbench/`。
-3. 把 Skill 复制到 `~/.workbuddy/skills/finance-workbench/`。
-4. 备份已有 `~/.workbuddy/.mcp.json`。
-5. 只向 `mcpServers` 新增或更新 `finance-workbench` 一项。
-6. 校验 MCP Server 文件语法。
+1. 检查 Node.js、安装包、MCP 配置结构和服务端语法；不完整或损坏时保留原安装。
+2. 在临时目录准备应用、Skill 和新配置。
+3. 备份旧目录和配置，再切换到新版本；备份名称带唯一后缀，连续更新不会覆盖旧副本。
+4. 只更新财务工作台的启动入口，保留其他 MCP 服务、顶层配置和财务工作台自定义环境项。
+5. 若切换中发生错误，恢复旧目录；若配置被其他程序同时修改，终止本次安装并保留该修改。
+
+Shell 和 PowerShell 都调用随包提供的 `scripts/workbuddy-install.mjs`；请保留整个解压目录，不要只复制一个脚本。
 
 安装器不会读取财务资料或密钥，也不会删除其他 MCP 配置，更不会强制重启 WorkBuddy。
 
@@ -4628,7 +4756,7 @@ WorkBuddy 通常在启动时读取 MCP 配置。只关闭当前对话或窗口�
 - 出现可操作的财务工作台，而不是只有一段文字说明。
 - 左侧可访问 20 个模块，顶部可进入待办、月结、资料库和工作流。
 - 可切换 4 套主题，正文和按钮字号清晰。
-- 点击工作流“开始处理”后，结构化指令进入 WorkBuddy 输入框；发送前可以核对附件。
+- 点击工作流“带入对话，确认发送”后，结构化指令进入 WorkBuddy 输入框；发送前可以核对附件。
 
 ### 推荐的第一次练习
 
@@ -4636,14 +4764,14 @@ WorkBuddy 通常在启动时读取 MCP 配置。只关闭当前对话或窗口�
 2. 输入 `打开财务工作台`，进入“工作流”。
 3. 选择“银行流水与账务明细核对”。
 4. 查看输入材料、关键规则、7 步路径、固定输出包和验收清单。
-5. 点击“开始处理”，确认 WorkBuddy 输入框出现结构化任务；此时仍由你决定是否发送。
+5. 点击“带入对话，确认发送”，确认 WorkBuddy 输入框出现结构化任务；此时仍由你决定是否发送。
 6. 需要练习文件时，使用仓库 `examples/demo/` 中的虚构数据。
 
 ## 更新
 
 下载新版安装包后，重新运行安装脚本即可。旧应用、Skill 和 MCP 配置都会保留带时间戳的备份。
 
-更新后请重新打开 WorkBuddy，并在“系统设置”或发布页确认版本。台账与设置升级前建议先在“数据备份”导出 JSON。
+更新后请重新打开 WorkBuddy，并核对源码 package.json 或发布包版本。台账与设置升级前建议先在“数据备份”导出 JSON。
 
 ## 卸载
 
@@ -4803,7 +4931,7 @@ node scripts/generate-reproduction.mjs
 
 ## docs/TROUBLESHOOTING.md
 
-SHA-256: 56a36fc37dd2f53f6e078fd3fd68aa223c5373644df0af189a90e17ec2b0c7b9
+SHA-256: 3699d2cf93c09a1b7d2e41b855fafc2958960820dada0f65bad56d404f13fc56
 
 ~~~~~~text
 # 常见问题与排障
@@ -4843,7 +4971,26 @@ npm run check
 
 ## JSON 备份无法恢复
 
-只接受本项目导出的 v2 JSON 设置备份。它应包含 `product: dsh-finance-workbench`、待办、月结清单、收藏和字段字典。
+只接受本项目导出的 v2 JSON 备份，单份上限 5 MB。系统会逐项检查主体期间、待办日期、记录标识、金额、日志时间和异常处置证据。请按界面中的错误位置检查备份，原数据不会因为校验失败被替换。
+
+旧 v2 备份仍可导入；没有资料置顶或最近工作流字段时，保留当前对应记录。恢复前自动保留一份完整副本，可在“数据备份”中点击“下载恢复前副本”。
+
+## 出现“本机保存未完成”
+
+当前修改仍在界面内，刷新或退出可能丢失。立即点击“导出 JSON 备份”，检查浏览器 / Widget 是否允许本机存储，以及空间是否充足。数据无法读取时不会自动覆盖损坏的存储。
+
+## 工作流复制失败
+
+先点击“复制完整提示词”。若仍提示复制受限，展开提示词并手动全选复制。Widget 不会把发送和复制失败显示为成功。
+
+## 只想本机预览
+
+```bash
+npm ci
+npm run preview
+```
+
+打开 http://127.0.0.1:4173。财务台账和设置只保存在该预览来源的本机存储，工作流指令由你粘贴到 AI 对话执行。不同宿主 / 端口之间通过 JSON 备份迁移数据。
 
 ## Agent 直接给结论，没有执行文件处理
 
@@ -5047,29 +5194,82 @@ SHA-256: 88017a60d17754df91cd4a1819ff402dee691a73fda270307635adc1c791297a
 
 ~~~~~~
 
+## docs/releases/v2.7.0.md
+
+SHA-256: 891ede3506eb8c7d6b036b3f9647d9a09741500fe588575633c370dc27f3eff7
+
+~~~~~~text
+# v2.7.0 · 安装与数据可靠性升级
+
+本次保留 20 个业务模块、25 个完整工作流，以及 WorkBuddy、DeepSeek Harness 和通用 Agent Skill 三种入口，重点修复升级、数据保存和文件读写中的实际问题。
+
+| 检查发现 | 升级后的行为 |
+|---|---|
+| 依赖更新后源码复刻清单过期，导致 CI 失败 | 每次检查先构建并重建复刻包，再验证所有源文件的 SHA-256 |
+| 依赖审计发现 5 个漏洞项 | 更新 MCP SDK、Zod 及相关传递依赖；官方 npm 审计为 0 |
+| 上传与工作流目录可能被符号链接引到工作区外 | 检查目录和临时文件，拒绝符号链接与越界写入 |
+| 安装器尚未验证配置便替换旧目录 | 先预检与暂存，备份后切换，遇到失败恢复旧目录 |
+| 备份遗漏置顶、最近工作流，内层损坏数据可能进入界面 | 补齐备份字段，逐项校验并保留恢复前副本 |
+| 本机保存失败被忽略，主题切换后立即刷新可能丢失 | 提交后立即保存，失败显示明确的导出提示 |
+| 金额显示省略分位，浮点合计出现尾差 | 显示两位小数，按分计算利润与异常合计 |
+| CSV 文本可能被 Excel 当作公式 | 对公式样式的文本加保护前缀，保留普通中文和金额 |
+| Widget 复制失败仍可能报告成功 | 检查实际复制结果，失败时提示手动复制 |
+| npm 包内缺少配套卸载与安装辅助文件 | 补齐 Shell / PowerShell 共用逻辑、卸载脚本和文档 |
+
+## 立即使用
+
+从源码预览：
+
+```bash
+npm ci
+npm run preview
+```
+
+打开 http://127.0.0.1:4173。预览中的台账和主题保存在该浏览器来源的本机存储，工作流指令需粘贴到 AI 对话执行。安装完整 WorkBuddy 应用见 [安装指南](../INSTALL_WORKBUDDY.md)。GitHub 下载包的版本以 Releases 页面为准。
+
+## 数据恢复
+
+导出格式仍为 v2，旧备份可以继续导入。新增备份包含资料置顶和最近工作流。历史备份缺少这两项时，保留当前记录。
+
+导入先检查所有数据，再保存恢复前副本，最后切换。校验失败不替换现有数据。“下载恢复前副本”可以导出回滚材料。存储拒绝写入或容量不足时，先导出备份再处理存储问题。
+
+JSON 备份不包含原始财务文件。Widget 的资料选择只建立当前会话索引，仍需在宿主对话中添加原始附件。
+
+## 验证与运行边界
+
+```bash
+npm ci
+npm run verify:release
+npm run audit:deps
+```
+
+CI 覆盖 Linux Node.js 20、22、24 和 Windows Node.js 24 / PowerShell。浏览器回归使用虚构数据；真实 WorkBuddy / DSH 的插件加载与 AI 文件处理仍需在对应宿主内验收。此次源码升级不重启宿主，不更改现有模型、登录配置或业务文件。
+
+~~~~~~
+
 ## package-lock.json
 
-SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
+SHA-256: a2beb9f3b8079a573d4ecff9f1a8da218bc0eba490af1e67e123ceb0fcbbb07f
 
 ~~~~~~text
 {
   "name": "dsh-finance-workbench",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "dsh-finance-workbench",
-      "version": "2.6.0",
+      "version": "2.7.0",
       "license": "MIT",
       "dependencies": {
         "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.7",
         "esbuild": "^0.28.2",
-        "zod": "^4.4.3"
+        "zod": "^4.6.5"
       },
       "devDependencies": {
         "@modelcontextprotocol/ext-apps": "^1.7.5",
-        "@modelcontextprotocol/sdk": "1.30.0",
+        "@modelcontextprotocol/sdk": "1.32.1",
         "preact": "^10.29.8"
       },
       "engines": {
@@ -5603,9 +5803,9 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       }
     },
     "node_modules/@modelcontextprotocol/sdk": {
-      "version": "1.30.0",
-      "resolved": "https://registry.npmmirror.com/@modelcontextprotocol/sdk/-/sdk-1.30.0.tgz",
-      "integrity": "sha512-xKd8OIzlqNzcqcNumGAa6g+PW2kjD5vrpcKOnfldAUPP3j7lnqMPwlTXQm8gF+UwH72z0lqaRbjr9hqGz0eITA==",
+      "version": "1.32.1",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/sdk/-/sdk-1.32.1.tgz",
+      "integrity": "sha512-2DdE+SJDtzLEEWzY1ZjY7Q+VcPhcV1KisD3zI4u0XZyktsjHum1mwbMI+JaulUBi2OZk+KJAi2uPXzxichPkdw==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -6101,9 +6301,9 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       "license": "MIT"
     },
     "node_modules/fast-uri": {
-      "version": "3.1.7",
-      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.7.tgz",
-      "integrity": "sha512-dOvZVzjdZdz7phd9v6jCbwxrBW3fK6n8Rc0CtdmM4bumzMnxywBYhuph6J819RRw/ku+rLbelwfMunktuzVVHg==",
+      "version": "3.1.8",
+      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.8.tgz",
+      "integrity": "sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg==",
       "dev": true,
       "funding": [
         {
@@ -6248,9 +6448,9 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       }
     },
     "node_modules/hono": {
-      "version": "4.13.3",
-      "resolved": "https://registry.npmmirror.com/hono/-/hono-4.13.3.tgz",
-      "integrity": "sha512-r8AO2mYHoLxSHkgafNeC/BXyb2vWRxD3jem4Ts+ptav8oTG5FIRifAjuJEmZI4bSvvc2ns0GxmIYiZnHqN3mMw==",
+      "version": "4.13.13",
+      "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.13.tgz",
+      "integrity": "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==",
       "dev": true,
       "license": "MIT",
       "engines": {
@@ -6303,9 +6503,9 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       "license": "ISC"
     },
     "node_modules/ip-address": {
-      "version": "10.5.0",
-      "resolved": "https://registry.npmmirror.com/ip-address/-/ip-address-10.5.0.tgz",
-      "integrity": "sha512-R5SnVLJmgYYvf2F2ZgwSBnelz5G4q5AxIC277GDfUaNbrZKNANcBC7RHqYYePlszf4kBolVkJauG0ZjHHFh55g==",
+      "version": "10.7.3",
+      "resolved": "https://registry.npmjs.org/ip-address/-/ip-address-10.7.3.tgz",
+      "integrity": "sha512-A1kdq/tSb5QjvKvAMgIoEvDBIgL7qaqVP/jkvSwYYRZ9iEzvPpopxp2wQfu3SuZRHtpHNxMn8Fs0bS+gf5Xmwg==",
       "dev": true,
       "license": "MIT",
       "engines": {
@@ -6569,9 +6769,9 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       }
     },
     "node_modules/proxy-addr": {
-      "version": "2.0.7",
-      "resolved": "https://registry.npmmirror.com/proxy-addr/-/proxy-addr-2.0.7.tgz",
-      "integrity": "sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==",
+      "version": "2.0.8",
+      "resolved": "https://registry.npmjs.org/proxy-addr/-/proxy-addr-2.0.8.tgz",
+      "integrity": "sha512-5nnx0yGyVUcY6t9RnWcARWtwT9F1D8O9rt08htPvnd49W1IgZtmLkhu9WfMzQj1cFxjHIO6connUNVW5k7AVyQ==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -6580,6 +6780,10 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       },
       "engines": {
         "node": ">= 0.10"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/express"
       }
     },
     "node_modules/qs": {
@@ -6913,9 +7117,9 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
       "license": "ISC"
     },
     "node_modules/zod": {
-      "version": "4.4.3",
-      "resolved": "https://registry.npmmirror.com/zod/-/zod-4.4.3.tgz",
-      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==",
+      "version": "4.6.5",
+      "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.5.tgz",
+      "integrity": "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==",
       "license": "MIT",
       "funding": {
         "url": "https://github.com/sponsors/colinhacks"
@@ -6938,12 +7142,12 @@ SHA-256: 08895e66f55b53b2922bffc8012b7995e90e6a4ad412fc4d58b242c18c995c26
 
 ## package.json
 
-SHA-256: 99c71ba76de4ef69918d74bc97695aabbe618638791ec8ad5e618de9fbc02054
+SHA-256: 1550d3b74917fc62e59731cd471a66f2b4658544173f09625797de03450a104c
 
 ~~~~~~text
 {
   "name": "dsh-finance-workbench",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "WorkBuddy 与 DeepSeek Harness 可视化财务工作台 — 20 个模块、异常闭环和 25 个 AI 工作流",
   "license": "MIT",
   "homepage": "https://github.com/feng-liu-1994/workbuddy-finance-workbench#readme",
@@ -6985,7 +7189,12 @@ SHA-256: 99c71ba76de4ef69918d74bc97695aabbe618638791ec8ad5e618de9fbc02054
     "cordis.patch.yml",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "scripts/workbuddy-install.mjs",
+    "scripts/uninstall-workbuddy-app.sh",
+    "scripts/uninstall-workbuddy-app.ps1",
+    "docs",
+    "SECURITY.md"
   ],
   "dsh": {
     "bundle": {
@@ -7002,25 +7211,29 @@ SHA-256: 99c71ba76de4ef69918d74bc97695aabbe618638791ec8ad5e618de9fbc02054
     }
   },
   "scripts": {
-    "build": "node build.mjs && node scripts/build-workbuddy-app.mjs",
-    "catalog": "node scripts/generate-agent-catalog.mjs",
+    "build": "node scripts/sync-version.mjs && node build.mjs && node scripts/build-workbuddy-app.mjs",
+    "catalog": "node scripts/sync-version.mjs && node scripts/generate-agent-catalog.mjs",
     "test": "node --test test/*.test.mjs",
     "security:scan": "node scripts/security-scan.mjs",
-    "check": "npm run catalog && npm run build && npm run test && npm run security:scan",
+    "check": "npm run catalog && npm run build && npm run reproduce && npm run test && npm run security:scan",
     "verify:release": "bash scripts/verify-release.sh",
     "package:release": "bash scripts/package-release.sh",
-    "prepack": "npm run check"
+    "prepack": "npm run check",
+    "reproduce": "node scripts/generate-reproduction.mjs",
+    "preview": "npm run build && node scripts/preview.mjs",
+    "audit:deps": "npm audit --registry=https://registry.npmjs.org"
   },
   "dependencies": {
     "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.7",
     "esbuild": "^0.28.2",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@modelcontextprotocol/ext-apps": "^1.7.5",
-    "@modelcontextprotocol/sdk": "1.30.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "preact": "^10.29.8"
-  }
+  },
+  "releaseDate": "2026-10-08"
 }
 
 ~~~~~~
@@ -7086,10 +7299,10 @@ console.log(`built WorkBuddy MCP App · widget ${bytes} B packed (${Buffer.byteL
 
 ## scripts/generate-agent-catalog.mjs
 
-SHA-256: 1578b4732427f11a01dde8bd157cc73e1988576fc5ac8de4a4f89e23604f789d
+SHA-256: 9f4c41fcf2e2ed88d2a61a9f20030e566b2b8368fb26a26c757fab9a05f22d72
 
 ~~~~~~text
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { FINANCE_WORKFLOWS, SOP_STEPS } from '../src/finance-data.js'
 import { composeFinanceTask } from '../src/task-prompt.js'
 
@@ -7098,11 +7311,12 @@ const promptRoot = new URL('./prompts/', root)
 await mkdir(root, { recursive: true })
 await mkdir(promptRoot, { recursive: true })
 
+const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
 const catalog = {
   product: 'workbuddy-finance-workbench',
   version: 2,
-  productVersion: '2.6.0',
-  generatedAt: '2026-08-24',
+  productVersion: pkg.version,
+  generatedAt: pkg.releaseDate,
   sopSteps: SOP_STEPS.map(([number, title, note]) => ({ number, title, note })),
   workflows: FINANCE_WORKFLOWS,
 }
@@ -7158,20 +7372,20 @@ console.log(`generated ${FINANCE_WORKFLOWS.length} agent workflows and ${FINANCE
 
 ## scripts/generate-reproduction.mjs
 
-SHA-256: 934cab4a1dee7272483f0711805dce7e4962236f51c52b421a40c8d1f86f734f
+SHA-256: 058b1643c517038cf2ef5d3f46fec4bbe2826a6e76735162290a4005f0abb038
 
 ~~~~~~text
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'node:path'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
 const teacher = pkg.name.includes('teacher')
 const title = teacher ? '教师工作台' : '财务工作台'
 const repo = teacher ? 'deepseek-harness-teacher-workbench' : 'workbuddy-finance-workbench'
-const data = await import(path.join(root, teacher ? 'src/teacher-workflows.js' : 'src/finance-data.js'))
-const composers = await import(path.join(root, 'src/task-prompt.js'))
+const data = await import(pathToFileURL(path.join(root, teacher ? 'src/teacher-workflows.js' : 'src/finance-data.js')))
+const composers = await import(pathToFileURL(path.join(root, 'src/task-prompt.js')))
 const workflows = (teacher ? data.TEACHER_WORKFLOWS : data.FINANCE_WORKFLOWS).map(w => ({id:w.id, title:w.title, prompt:teacher ? composers.composeTeacherTask(w) : composers.composeFinanceTask(w)}))
 async function walk(dir) {
   const entries = await readdir(path.join(root,dir),{withFileTypes:true})
@@ -7230,7 +7444,7 @@ console.log(title+': '+workflows.length+' prompts, '+files.length+' source files
 
 ## scripts/install-agent.ps1
 
-SHA-256: f643ff068a7b33aca707bb7fce321f43b8857e140772880d65ce52ffbc8c72ed
+SHA-256: cc7fbb1b4f8cd3b8d2dbcef786b4761e7062d8af9aa0633269f70b927afc0d08
 
 ~~~~~~text
 param(
@@ -7258,7 +7472,7 @@ New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
 $Destination = Join-Path $DestinationRoot "finance-workbench"
 
 if (Test-Path $Destination) {
-  $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+  $Timestamp = (Get-Date -Format "yyyyMMdd-HHmmss") + "-" + [guid]::NewGuid().ToString("N").Substring(0, 8)
   $Backup = Join-Path $DestinationRoot "finance-workbench.backup-$Timestamp"
   Move-Item $Destination $Backup
   Write-Host "旧版已备份到: $Backup"
@@ -7273,7 +7487,7 @@ Write-Host "请重新打开 $Target，然后明确说：请使用 finance-workbe
 
 ## scripts/install-agent.sh
 
-SHA-256: ee6140f1f40162ed4714be209c9d998518a87fa1686c782366df11dccf61c3bb
+SHA-256: e428eb8b6a168aba8b47c6d6e82088fa58651fd219ebed50ea0d241e6ca75e50
 
 ~~~~~~text
 #!/usr/bin/env bash
@@ -7310,7 +7524,7 @@ fi
 mkdir -p "$destination_root"
 destination="$destination_root/finance-workbench"
 if [[ -e "$destination" ]]; then
-  timestamp="$(date +%Y%m%d-%H%M%S)"
+  timestamp="$(date +%Y%m%d-%H%M%S)-$$-$RANDOM"
   backup="$destination_root/finance-workbench.backup-$timestamp"
   mv "$destination" "$backup"
   echo "旧版已备份到: $backup"
@@ -7326,7 +7540,7 @@ echo "请重新打开 ${target}，然后明确说：请使用 finance-workbench�
 
 ## scripts/install-dsh.sh
 
-SHA-256: 583ba749b54b97d4a6a50f62feda4813311d116bad88cac86c4803d85d92d16c
+SHA-256: 1be66a030b93f8284eb05f27b8ba10018e0bc2ab9c3fbfe10c60236be2afecfa
 
 ~~~~~~text
 #!/usr/bin/env bash
@@ -7336,7 +7550,7 @@ profile="web"
 dry_run="false"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --profile) profile="${2:-}"; shift 2 ;;
+    --profile) [[ $# -ge 2 && -n "${2:-}" ]] || { echo "--profile 需要名称" >&2; exit 2; }; profile="$2"; shift 2 ;;
     --dry-run) dry_run="true"; shift ;;
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
@@ -7345,6 +7559,7 @@ done
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 dsh_base="${DSH_HOME:-$HOME/.dsh}"
+[[ "$profile" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]] || { echo "profile 名称无效" >&2; exit 2; }
 profile_dir="$dsh_base/profiles/$profile"
 profile_package="$profile_dir/package.json"
 
@@ -7364,10 +7579,15 @@ if [[ "$dry_run" == "true" ]]; then
 fi
 
 cd "$repo_root"
-npm install --ignore-scripts
+npm ci
 npm run check
 
-timestamp="$(date +%Y%m%d-%H%M%S)"
+node -e "const p=require(process.argv[1]); if(!p.dsh?.profile||!Array.isArray(p.dsh.profile.bundles)) process.exit(2)" "$profile_package"
+if ! command -v pnpm >/dev/null 2>&1 && ! command -v corepack >/dev/null 2>&1; then
+  echo "未找到 pnpm 或 corepack；尚未修改 profile 配置。" >&2
+  exit 1
+fi
+timestamp="$(date +%Y%m%d-%H%M%S)-$(node -e 'console.log(require("node:crypto").randomUUID().slice(0,8))')"
 backup="$profile_package.finance-workbench-backup-$timestamp"
 cp "$profile_package" "$backup"
 echo "配置已备份: $backup"
@@ -7401,150 +7621,39 @@ echo "财务工作台已安装。请先保存当前工作，再重启 DeepSeek H
 
 ## scripts/install-workbuddy-app.ps1
 
-SHA-256: d34819af5bdafe9abd1be4bc5140383a28c8dd3f5237e4c39817b389312c2ebd
+SHA-256: 72d655adcfc33309de776088315cc62b152215338685fa50f9f2953e14fb88b9
 
 ~~~~~~text
-param([switch]$DryRun)
+﻿param([switch]$DryRun)
 $ErrorActionPreference = 'Stop'
-
-$RepoRoot = Split-Path -Parent $PSScriptRoot
-$WorkBuddyHome = if ($env:WORKBUDDY_HOME) { $env:WORKBUDDY_HOME } else { Join-Path $env:USERPROFILE '.workbuddy' }
-$AppRoot = Join-Path $WorkBuddyHome 'apps\finance-workbench'
-$SkillRoot = Join-Path $WorkBuddyHome 'skills\finance-workbench'
-$ConfigFile = Join-Path $WorkBuddyHome '.mcp.json'
-$Node = (Get-Command node -ErrorAction SilentlyContinue).Source
-
-if (-not $Node) { throw '请先安装 Node.js 20 或更高版本：https://nodejs.org/' }
-$Major = [int]((& $Node -p "process.versions.node.split('.')[0]").Trim())
-if ($Major -lt 20) { throw "Node.js 版本过低，需要 20+。" }
-$ServerSource = Join-Path $RepoRoot 'workbuddy\server.mjs'
-$WidgetSource = Join-Path $RepoRoot 'workbuddy\widget.html'
-$SkillSource = Join-Path $RepoRoot 'agents\finance-workbench'
-if (!(Test-Path $ServerSource) -or !(Test-Path $WidgetSource) -or !(Test-Path (Join-Path $SkillSource 'SKILL.md'))) {
-  throw '安装包不完整，请重新下载发布版 ZIP。'
-}
-
-Write-Host "WorkBuddy 目录：$WorkBuddyHome"
-Write-Host "图形工作台：$AppRoot"
-if ($DryRun) { Write-Host '预检通过；未修改任何文件。'; exit 0 }
-
-New-Item -ItemType Directory -Force -Path (Split-Path $AppRoot), (Split-Path $SkillRoot) | Out-Null
-$Stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-if (Test-Path $AppRoot) { Move-Item $AppRoot "$AppRoot.backup-$Stamp" }
-if (Test-Path $SkillRoot) { Move-Item $SkillRoot "$SkillRoot.backup-$Stamp" }
-New-Item -ItemType Directory -Force -Path $AppRoot | Out-Null
-Copy-Item $ServerSource, $WidgetSource -Destination $AppRoot
-Copy-Item $SkillSource -Destination $SkillRoot -Recurse
-
-if (Test-Path $ConfigFile) {
-  Copy-Item $ConfigFile "$ConfigFile.finance-workbench-backup-$Stamp"
-  $Config = Get-Content $ConfigFile -Raw | ConvertFrom-Json
-} else {
-  $Config = [pscustomobject]@{ mcpServers = [pscustomobject]@{} }
-}
-if ($null -eq $Config.mcpServers) { $Config | Add-Member -NotePropertyName mcpServers -NotePropertyValue ([pscustomobject]@{}) -Force }
-$ServerEntry = [pscustomobject]@{
-  command = $Node
-  args = @((Join-Path $AppRoot 'server.mjs'))
-  env = [pscustomobject]@{ WORKBUDDY_FINANCE_WORKBENCH = '1' }
-}
-$Config.mcpServers | Add-Member -NotePropertyName 'finance-workbench' -NotePropertyValue $ServerEntry -Force
-$Config | ConvertTo-Json -Depth 20 | Set-Content $ConfigFile -Encoding utf8
-& $Node --check (Join-Path $AppRoot 'server.mjs')
-
-Write-Host ''
-Write-Host '安装完成。请先保存 WorkBuddy 中正在编辑的内容，然后完全退出并重新打开。'
-Write-Host '重新打开后输入：打开财务工作台'
-Write-Host '安装器没有读取或上传你的财务数据，也没有替你重启 WorkBuddy。'
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$NodeCommand = Get-Command node -ErrorAction SilentlyContinue
+if (-not $NodeCommand) { throw '请先安装 Node.js 20+：https://nodejs.org/' }
+$Arguments = @((Join-Path $PSScriptRoot 'workbuddy-install.mjs'), 'install')
+if ($DryRun) { $Arguments += '--dry-run' }
+& $NodeCommand.Source @Arguments
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 ~~~~~~
 
 ## scripts/install-workbuddy-app.sh
 
-SHA-256: 0acc3042a404f3cad6af7914fbfed4a2a364bcd6b8715bbc35af5e2ce1916518
+SHA-256: 0a8296b0db4a3ff8db3063a02a0355fb0c0c5dbb21dda7131b2da4e1b343e404
 
 ~~~~~~text
 #!/usr/bin/env bash
 set -euo pipefail
-
-dry_run="false"
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry_run="true"; shift ;;
-    *) echo "未知参数: $1" >&2; exit 2 ;;
-  esac
-done
-
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/.." && pwd)"
-workbuddy_home="${WORKBUDDY_HOME:-$HOME/.workbuddy}"
-app_root="$workbuddy_home/apps/finance-workbench"
-skill_root="$workbuddy_home/skills/finance-workbench"
-config_file="$workbuddy_home/.mcp.json"
 node_bin="$(command -v node || true)"
-
-[[ -n "$node_bin" ]] || { echo "请先安装 Node.js 20 或更高版本：https://nodejs.org/" >&2; exit 1; }
-node_major="$($node_bin -p "process.versions.node.split('.')[0]")"
-[[ "$node_major" -ge 20 ]] || { echo "Node.js 版本过低：$($node_bin --version)，需要 20+" >&2; exit 1; }
-[[ -f "$repo_root/workbuddy/server.mjs" && -f "$repo_root/workbuddy/widget.html" ]] || { echo "安装包不完整：缺少 workbuddy/server.mjs 或 widget.html" >&2; exit 1; }
-[[ -f "$repo_root/agents/finance-workbench/SKILL.md" ]] || { echo "安装包不完整：缺少 finance-workbench Skill" >&2; exit 1; }
-
-echo "WorkBuddy 目录：$workbuddy_home"
-echo "图形工作台：$app_root"
-echo "财务 Skill：$skill_root"
-if [[ "$dry_run" == "true" ]]; then
-  echo "预检通过；未修改任何文件。"
-  exit 0
-fi
-
-mkdir -p "$workbuddy_home/apps" "$workbuddy_home/skills"
-timestamp="$(date +%Y%m%d-%H%M%S)"
-if [[ -e "$app_root" ]]; then
-  mv "$app_root" "$app_root.backup-$timestamp"
-  echo "旧图形工作台已备份：$app_root.backup-$timestamp"
-fi
-if [[ -e "$skill_root" ]]; then
-  mv "$skill_root" "$skill_root.backup-$timestamp"
-  echo "旧 Skill 已备份：$skill_root.backup-$timestamp"
-fi
-mkdir -p "$app_root"
-cp "$repo_root/workbuddy/server.mjs" "$repo_root/workbuddy/widget.html" "$app_root/"
-cp -R "$repo_root/agents/finance-workbench" "$skill_root"
-
-if [[ -f "$config_file" ]]; then
-  cp "$config_file" "$config_file.finance-workbench-backup-$timestamp"
-  echo "MCP 配置已备份：$config_file.finance-workbench-backup-$timestamp"
-else
-  printf '{\n  "mcpServers": {}\n}\n' > "$config_file"
-fi
-
-tmp_config="$config_file.finance-workbench-tmp-$timestamp"
-"$node_bin" --input-type=module - "$config_file" "$tmp_config" "$node_bin" "$app_root/server.mjs" <<'NODE'
-import { readFile, writeFile } from 'node:fs/promises'
-const [source, target, nodeBin, server] = process.argv.slice(2)
-const config = JSON.parse(await readFile(source, 'utf8'))
-config.mcpServers ||= {}
-config.mcpServers['finance-workbench'] = {
-  command: nodeBin,
-  args: [server],
-  env: { WORKBUDDY_FINANCE_WORKBENCH: '1' },
-}
-await writeFile(target, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 })
-NODE
-mv "$tmp_config" "$config_file"
-chmod 600 "$config_file" 2>/dev/null || true
-
-"$node_bin" --check "$app_root/server.mjs"
-echo
-echo "安装完成。请先保存 WorkBuddy 中正在编辑的内容，然后完全退出并重新打开 WorkBuddy。"
-echo "重新打开后输入：打开财务工作台"
-echo "安装器没有读取或上传你的财务数据，也没有替你重启 WorkBuddy。"
+[[ -n "$node_bin" ]] || { echo "请先安装 Node.js 20+：https://nodejs.org/" >&2; exit 1; }
+exec "$node_bin" "$script_dir/workbuddy-install.mjs" install "$@"
 
 ~~~~~~
 
 ## scripts/package-release.sh
 
-SHA-256: a7f18a2bec8fc3c22c0043c372461a554412817aec8d86a43cf024532e0a67b5
+SHA-256: 98aa7b8612150e13927310121c1d52fb89b259875587af53cb04314d1fa21b47
 
 ~~~~~~text
 #!/usr/bin/env bash
@@ -7567,7 +7676,7 @@ mac="$stage/workbuddy-finance-workbench-macos"
 mkdir -p "$mac/scripts"
 cp -R workbuddy agents "$mac/"
 cp -R docs "$mac/"
-cp scripts/install-workbuddy-app.sh scripts/uninstall-workbuddy-app.sh "$mac/scripts/"
+cp scripts/workbuddy-install.mjs scripts/install-workbuddy-app.sh scripts/uninstall-workbuddy-app.sh "$mac/scripts/"
 cp "安装 WorkBuddy 财务工作台.command" "卸载 WorkBuddy 财务工作台.command" README.md LICENSE "$mac/"
 chmod +x "$mac/scripts/"*.sh "$mac/"*.command
 (cd "$stage" && zip -qry "$repo_root/release/workbuddy-finance-workbench-macos.zip" "$(basename "$mac")")
@@ -7576,7 +7685,7 @@ windows="$stage/workbuddy-finance-workbench-windows"
 mkdir -p "$windows/scripts"
 cp -R workbuddy agents "$windows/"
 cp -R docs "$windows/"
-cp scripts/install-workbuddy-app.ps1 scripts/uninstall-workbuddy-app.ps1 "$windows/scripts/"
+cp scripts/workbuddy-install.mjs scripts/install-workbuddy-app.ps1 scripts/uninstall-workbuddy-app.ps1 "$windows/scripts/"
 cp README.md LICENSE "$windows/"
 (cd "$stage" && zip -qry "$repo_root/release/workbuddy-finance-workbench-windows.zip" "$(basename "$windows")")
 
@@ -7584,7 +7693,7 @@ agent="$stage/finance-workbench"
 cp -R agents/finance-workbench "$agent"
 (cd "$stage" && zip -qry "$repo_root/release/finance-workbench-agent-v${version}.zip" "$(basename "$agent")")
 
-npm pack --pack-destination release >/dev/null
+npm pack --ignore-scripts --pack-destination release >/dev/null
 (
   cd release
   shasum -a 256 "workbuddy-finance-workbench-macos.zip" "workbuddy-finance-workbench-windows.zip" "finance-workbench-agent-v${version}.zip" "dsh-finance-workbench-${version}.tgz" > SHA256SUMS.txt
@@ -7592,6 +7701,29 @@ npm pack --pack-destination release >/dev/null
 
 echo "发布包已生成：$repo_root/release"
 ls -lh release
+
+~~~~~~
+
+## scripts/preview.mjs
+
+SHA-256: 0cc9d350221d803bf17938071c0129490741720207f81c83555068113f1c72f2
+
+~~~~~~text
+import { createServer } from 'node:http'
+import { readFile } from 'node:fs/promises'
+const port = Number(process.env.PORT || 4173)
+if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT 必须为 1–65535')
+const widget = new URL('../workbuddy/widget.html', import.meta.url)
+await readFile(widget)
+createServer(async (request, response) => {
+  if (request.url === '/' || request.url === '/index.html') {
+    try {
+      const html = await readFile(widget)
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
+      response.end(html)
+    } catch { response.writeHead(503); response.end('预览资源暂不可读，请完成构建后刷新') }
+  } else { response.writeHead(request.url === '/favicon.ico' ? 204 : 404); response.end() }
+}).listen(port, '127.0.0.1', () => console.log(`财务工作台本机预览：http://127.0.0.1:${port}（Ctrl+C 停止）`))
 
 ~~~~~~
 
@@ -7644,9 +7776,28 @@ console.log('public release security scan passed')
 
 ~~~~~~
 
+## scripts/sync-version.mjs
+
+SHA-256: bb23d9cba775424ce62eaac1850f42ee81ed2f0371fae41ad7f65314aa2ea86c
+
+~~~~~~text
+import { readFile, writeFile } from 'node:fs/promises'
+const root = new URL('../', import.meta.url)
+const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'))
+await writeFile(new URL('src/version.js', root), `// Generated from package.json by scripts/sync-version.mjs.\nexport const VERSION = '${pkg.version}'\n`)
+const pluginFile = new URL('.codebuddy-plugin/plugin.json', root)
+const plugin = JSON.parse(await readFile(pluginFile, 'utf8'))
+plugin.version = pkg.version
+await writeFile(pluginFile, `${JSON.stringify(plugin, null, 2)}\n`)
+const skillFile = new URL('agents/finance-workbench/SKILL.md', root)
+const skill = await readFile(skillFile, 'utf8')
+await writeFile(skillFile, skill.replace(/version: "[^"]+"/, `version: "${pkg.version}"`))
+
+~~~~~~
+
 ## scripts/uninstall-agent.sh
 
-SHA-256: 3e1e4615f9830ff359976f15460f820662123e2a2d89ffab5414a2959d007ba0
+SHA-256: faf2efa9195942d4814e03f624c96d98a8da084574e571d1d633396dbb152b14
 
 ~~~~~~text
 #!/usr/bin/env bash
@@ -7673,7 +7824,7 @@ if [[ ! -e "$destination" ]]; then
   exit 0
 fi
 
-timestamp="$(date +%Y%m%d-%H%M%S)"
+timestamp="$(date +%Y%m%d-%H%M%S)-$$-$RANDOM"
 backup="$destination_root/finance-workbench.uninstalled-$timestamp"
 mv "$destination" "$backup"
 echo "已从技能目录移出，保留在: $backup"
@@ -7682,75 +7833,39 @@ echo "已从技能目录移出，保留在: $backup"
 
 ## scripts/uninstall-workbuddy-app.ps1
 
-SHA-256: f68df3b2a17ec0bae78ea133a3be89604d70bfe652bf485dae258871eb50baed
+SHA-256: 3f293f7aeb2fff1e84c9233b3a20d91cd5c787f30755e6dd1ed72f823154a0d8
 
 ~~~~~~text
+﻿param([switch]$DryRun)
 $ErrorActionPreference = 'Stop'
-$WorkBuddyHome = if ($env:WORKBUDDY_HOME) { $env:WORKBUDDY_HOME } else { Join-Path $env:USERPROFILE '.workbuddy' }
-$AppRoot = Join-Path $WorkBuddyHome 'apps\finance-workbench'
-$SkillRoot = Join-Path $WorkBuddyHome 'skills\finance-workbench'
-$ConfigFile = Join-Path $WorkBuddyHome '.mcp.json'
-$Stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-
-if (Test-Path $ConfigFile) {
-  Copy-Item $ConfigFile "$ConfigFile.finance-workbench-uninstall-backup-$Stamp"
-  $Config = Get-Content $ConfigFile -Raw | ConvertFrom-Json
-  if ($Config.mcpServers) { $Config.mcpServers.PSObject.Properties.Remove('finance-workbench') }
-  $Config | ConvertTo-Json -Depth 20 | Set-Content $ConfigFile -Encoding utf8
-}
-foreach ($Target in @($AppRoot, $SkillRoot)) {
-  if (Test-Path $Target) {
-    Move-Item $Target "$Target.uninstalled-$Stamp"
-    Write-Host "已移出并保留可恢复副本：$Target.uninstalled-$Stamp"
-  }
-}
-Write-Host '卸载完成。保存当前工作后重启 WorkBuddy 即可生效。'
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$NodeCommand = Get-Command node -ErrorAction SilentlyContinue
+if (-not $NodeCommand) { throw '请先安装 Node.js 20+：https://nodejs.org/' }
+$Arguments = @((Join-Path $PSScriptRoot 'workbuddy-install.mjs'), 'uninstall')
+if ($DryRun) { $Arguments += '--dry-run' }
+& $NodeCommand.Source @Arguments
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 ~~~~~~
 
 ## scripts/uninstall-workbuddy-app.sh
 
-SHA-256: a164e374d2d7244e61e9539855db2f72da34661ad5b49acf4520d8a107d7840d
+SHA-256: 0a37999c980b3234150ff747077c0530be8f606a7be11d7d49717d1725f52225
 
 ~~~~~~text
 #!/usr/bin/env bash
 set -euo pipefail
-
-workbuddy_home="${WORKBUDDY_HOME:-$HOME/.workbuddy}"
-app_root="$workbuddy_home/apps/finance-workbench"
-skill_root="$workbuddy_home/skills/finance-workbench"
-config_file="$workbuddy_home/.mcp.json"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 node_bin="$(command -v node || true)"
-timestamp="$(date +%Y%m%d-%H%M%S)"
-
-[[ -n "$node_bin" ]] || { echo "需要 Node.js 20+ 才能安全更新配置" >&2; exit 1; }
-if [[ -f "$config_file" ]]; then
-  cp "$config_file" "$config_file.finance-workbench-uninstall-backup-$timestamp"
-  tmp_config="$config_file.finance-workbench-tmp-$timestamp"
-  "$node_bin" --input-type=module - "$config_file" "$tmp_config" <<'NODE'
-import { readFile, writeFile } from 'node:fs/promises'
-const [source, target] = process.argv.slice(2)
-const config = JSON.parse(await readFile(source, 'utf8'))
-if (config.mcpServers) delete config.mcpServers['finance-workbench']
-await writeFile(target, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 })
-NODE
-  mv "$tmp_config" "$config_file"
-  chmod 600 "$config_file" 2>/dev/null || true
-fi
-
-for target in "$app_root" "$skill_root"; do
-  if [[ -e "$target" ]]; then
-    mv "$target" "$target.uninstalled-$timestamp"
-    echo "已移出并保留可恢复副本：$target.uninstalled-$timestamp"
-  fi
-done
-echo "卸载完成。保存当前工作后重启 WorkBuddy 即可生效。"
+[[ -n "$node_bin" ]] || { echo "请先安装 Node.js 20+：https://nodejs.org/" >&2; exit 1; }
+exec "$node_bin" "$script_dir/workbuddy-install.mjs" uninstall "$@"
 
 ~~~~~~
 
 ## scripts/verify-release.sh
 
-SHA-256: db28bd3c91a69d78efdcab34c15d541fb9e43a65b7fc631f2e1b6cd956fe502b
+SHA-256: 8b3c68ac5b064f1db48cd95607a34fd9dab7b3f9fce933fe68040a6c1699c779
 
 ~~~~~~text
 #!/usr/bin/env bash
@@ -7791,8 +7906,114 @@ test -f "$fixture_home/skills/finance-workbench/SKILL.md"
 WORKBUDDY_HOME="$fixture_home" bash scripts/uninstall-workbuddy-app.sh
 node -e "const c=require(process.argv[1]); if(!c.mcpServers['keep-existing']||c.mcpServers['finance-workbench']) process.exit(1)" "$fixture_home/.mcp.json"
 
-npm pack --dry-run >/dev/null
+npm pack --ignore-scripts --dry-run >/dev/null
 echo "release verification passed"
+
+~~~~~~
+
+## scripts/workbuddy-install.mjs
+
+SHA-256: 0e69ed863abb6f13d3ba3d25c11918baa7ffaae7d09a8725077666e9a239f5dc
+
+~~~~~~text
+import { randomUUID } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
+import { access, cp, lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const [action, ...flags] = process.argv.slice(2)
+const dryRun = flags.includes('--dry-run')
+if (!['install', 'uninstall'].includes(action) || flags.some(flag => flag !== '--dry-run')) {
+  console.error('用法：node scripts/workbuddy-install.mjs install|uninstall [--dry-run]')
+  process.exit(2)
+}
+
+async function exists(path) {
+  try { await lstat(path); return true } catch (error) { if (error.code === 'ENOENT') return false; throw error }
+}
+
+async function run() {
+  if (Number(process.versions.node.split('.')[0]) < 20) throw new Error('需要 Node.js 20 或更高版本')
+  const home = process.env.WORKBUDDY_HOME || join(process.env.HOME || process.env.USERPROFILE || '', '.workbuddy')
+  if (!isAbsolute(home)) throw new Error('WorkBuddy 目录必须是绝对路径')
+  const configPath = join(home, '.mcp.json')
+  const appPath = join(home, 'apps', 'finance-workbench')
+  const skillPath = join(home, 'skills', 'finance-workbench')
+  const hasConfig = await exists(configPath)
+  let originalConfig
+  let config = { mcpServers: {} }
+  if (hasConfig) {
+    if ((await lstat(configPath)).isSymbolicLink()) throw new Error('MCP 配置是符号链接，请先改用普通配置文件')
+    originalConfig = await readFile(configPath)
+    try { config = JSON.parse(originalConfig.toString('utf8').replace(/^\uFEFF/, '')) } catch { throw new Error('MCP 配置不是有效 JSON；原应用、Skill 和配置均未修改') }
+    if (!config || typeof config !== 'object' || Array.isArray(config) || (config.mcpServers !== undefined && (!config.mcpServers || typeof config.mcpServers !== 'object' || Array.isArray(config.mcpServers)))) throw new Error('MCP 配置结构无效；原应用、Skill 和配置均未修改')
+    config.mcpServers ||= {}
+  }
+  if (action === 'install') {
+    await Promise.all(['workbuddy/server.mjs', 'workbuddy/widget.html', 'agents/finance-workbench/SKILL.md'].map(file => access(join(repo, file))))
+    execFileSync(process.execPath, ['--check', join(repo, 'workbuddy/server.mjs')], { stdio: 'pipe' })
+    const oldEntry = config.mcpServers['finance-workbench']
+    if (oldEntry !== undefined && (!oldEntry || typeof oldEntry !== 'object' || Array.isArray(oldEntry))) throw new Error('原财务工作台 MCP 配置结构无效')
+    if (oldEntry?.env !== undefined && (!oldEntry.env || typeof oldEntry.env !== 'object' || Array.isArray(oldEntry.env))) throw new Error('原财务工作台环境配置结构无效')
+    config.mcpServers['finance-workbench'] = {
+      ...oldEntry, command: process.execPath, args: [join(appPath, 'server.mjs')],
+      env: { ...oldEntry?.env, WORKBUDDY_FINANCE_WORKBENCH: '1' },
+    }
+  } else delete config.mcpServers['finance-workbench']
+  console.log(`WorkBuddy 目录：${home}`)
+  if (dryRun) { console.log('预检通过；未修改任何文件。'); return }
+
+  await mkdir(home, { recursive: true })
+  const stamp = `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`
+  const stage = await mkdtemp(join(home, '.finance-workbench-stage-'))
+  const moved = []
+  const installed = []
+  let configChanged = false
+  try {
+    if (action === 'install') {
+      await mkdir(join(stage, 'app'))
+      for (const file of ['server.mjs', 'widget.html']) await cp(join(repo, 'workbuddy', file), join(stage, 'app', file))
+      await cp(join(repo, 'agents', 'finance-workbench'), join(stage, 'skill'), { recursive: true })
+      await mkdir(dirname(appPath), { recursive: true })
+      await mkdir(dirname(skillPath), { recursive: true })
+    }
+    await writeFile(join(stage, 'config.json'), `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 })
+    if (hasConfig) await writeFile(`${configPath}.finance-workbench-${action}-backup-${stamp}`, originalConfig, { mode: 0o600 })
+    for (const target of [appPath, skillPath]) {
+      if (await exists(target)) {
+        const backup = `${target}.${action === 'install' ? 'backup' : 'uninstalled'}-${stamp}`
+        await rename(target, backup)
+        moved.push([target, backup])
+      }
+    }
+    if (action === 'install') {
+      for (const [source, target] of [[join(stage, 'app'), appPath], [join(stage, 'skill'), skillPath]]) {
+        await rename(source, target)
+        installed.push(target)
+      }
+    }
+    // Refuse to overwrite another process's concurrent configuration edit.
+    if (hasConfig ? !(await readFile(configPath)).equals(originalConfig) : await exists(configPath)) throw new Error('安装期间 MCP 配置已被其他程序修改，请稍后重试')
+    if (action === 'install' || hasConfig) {
+      await rename(join(stage, 'config.json'), configPath)
+      configChanged = true
+    }
+  } catch (error) {
+    for (const target of installed.reverse()) await rm(target, { recursive: true, force: true })
+    for (const [target, backup] of moved.reverse()) await rename(backup, target)
+    if (configChanged) {
+      if (hasConfig) await writeFile(configPath, originalConfig, { mode: 0o600 })
+      else await rm(configPath, { force: true })
+    }
+    throw error
+  } finally { await rm(stage, { recursive: true, force: true }) }
+  for (const [, backup] of moved) console.log(`已保留可恢复副本：${backup}`)
+  console.log(action === 'install' ? '安装完成。保存当前工作，完全退出并重新打开 WorkBuddy 后，输入：打开财务工作台' : '卸载完成。应用和 Skill 已保留可恢复副本；保存工作后重启 WorkBuddy 生效。')
+}
+
+run().catch(error => { console.error(error.message); process.exitCode = 1 })
 
 ~~~~~~
 
@@ -8352,6 +8573,33 @@ export function apply(ctx) {
 
 ~~~~~~
 
+## src/clipboard.js
+
+SHA-256: 94252e0d3393304d7700a397f4018c88f829dda482cc378900f4df967dcd086f
+
+~~~~~~text
+export async function copyText(value) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+      return
+    }
+  } catch {}
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  try {
+    textarea.select()
+    if (!document.execCommand('copy')) throw new Error('剪贴板不可用，请手动复制')
+  } finally {
+    textarea.remove()
+  }
+}
+
+~~~~~~
+
 ## src/contract.js
 
 SHA-256: 70636f9a8f4601b3edbb0b193ccb20f65761a19bb97f9a456dc2f65262cb5323
@@ -8477,7 +8725,7 @@ export const TYPERT_REMOTE = {
 
 ## src/finance-dashboard-helpers.js
 
-SHA-256: ee06f651218535dde90c533777fc726338c13bbbbd9dff53618c1982edf30903
+SHA-256: 3c5ac4cea972eff7ec8ab56430100bded71849e2af5ba7844902609f0edcf5ea
 
 ~~~~~~text
 export function localDateKey(date = new Date()) {
@@ -8485,6 +8733,19 @@ export function localDateKey(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+export function isValidDateKey(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const [year, month, day] = value.split('-').map(Number)
+  if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31) return false
+  const date = new Date(0)
+  date.setFullYear(year, month - 1, day)
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+}
+
+export function isValidPeriod(value) {
+  return typeof value === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(value) && Number(value.slice(0, 4)) > 0
 }
 
 export function shiftDate(value, days) {
@@ -8507,7 +8768,7 @@ export function normalizeTodo(item, fallbackDate = localDateKey()) {
     id: String(item?.id || `todo-${Date.now().toString(36)}`),
     text: String(item?.text || '').trim(),
     category: String(item?.category || '通用'),
-    due: /^\d{4}-\d{2}-\d{2}$/.test(String(item?.due || '')) ? String(item.due) : fallbackDate,
+    due: isValidDateKey(item?.due) ? item.due : fallbackDate,
     priority: ['高', '中', '低'].includes(item?.priority) ? item.priority : '中',
     done: Boolean(item?.done),
   }
@@ -8543,13 +8804,98 @@ export function buildFinanceBackup(state) {
     auditLog: Array.isArray(state.auditLog) ? state.auditLog : [],
     exceptions: Array.isArray(state.exceptions) ? state.exceptions : [],
     theme: String(state.theme || 'indigo'),
+    pinnedFiles: Array.isArray(state.pinnedFiles) ? state.pinnedFiles : [],
+    recentWorkflows: Array.isArray(state.recentWorkflows) ? state.recentWorkflows : [],
   }
 }
 
 export function parseFinanceBackup(value) {
+  if (typeof value === 'string' && value.length > 5 * 1024 * 1024) throw new Error('备份超过 5 MB，请拆分或整理后重试')
   const data = typeof value === 'string' ? JSON.parse(value) : value
   if (!data || data.product !== 'dsh-finance-workbench' || Number(data.version) !== 2) throw new Error('不是有效的财务工作台 v2 备份')
   if (!Array.isArray(data.todos) || !Array.isArray(data.closeTasks) || !Array.isArray(data.favorites) || !Array.isArray(data.fieldDictionary)) throw new Error('财务工作台备份内容不完整')
+  validateFinanceState(data)
+  return data
+}
+
+function record(value, label) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`备份中的${label}格式无效`)
+}
+
+function textField(row, key, label, max = 2000, required = false) {
+  const value = row[key]
+  if (value === undefined && !required) return
+  if (typeof value !== 'string' || value.length > max || (required && !value.trim())) throw new Error(`备份中的${label}格式无效`)
+}
+
+function collection(data, key, label, validate, optional = false) {
+  if (data[key] === undefined && optional) return
+  if (!Array.isArray(data[key]) || data[key].length > 10000) throw new Error(`备份中的${label}格式无效或条目过多`)
+  const ids = new Set()
+  for (const row of data[key]) {
+    record(row, label)
+    textField(row, 'id', `${label}标识`, 200, true)
+    if (ids.has(row.id)) throw new Error(`备份中的${label}包含重复标识`)
+    ids.add(row.id)
+    validate(row)
+  }
+}
+
+function stringList(data, key, label, optional = false) {
+  if (data[key] === undefined && optional) return
+  if (!Array.isArray(data[key]) || data[key].length > 10000 || data[key].some(item => typeof item !== 'string' || item.length > 1200)) throw new Error(`备份中的${label}格式无效`)
+}
+
+function amountField(row, key, label, empty = false) {
+  const value = row[key]
+  if (value === undefined || (empty && value === '')) return
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isSafeInteger(Math.round(value * 100))) throw new Error(`备份中的${label}金额无效`)
+}
+
+export function validateFinanceState(data) {
+  for (const key of ['profile', 'settings']) if (data[key] !== undefined) record(data[key], key === 'profile' ? '主体设置' : '阈值设置')
+  for (const key of ['name', 'entity', 'role']) textField(data.profile || {}, key, '主体设置')
+  if (data.profile?.period !== undefined && !isValidPeriod(data.profile.period)) throw new Error('备份中的主体期间无效')
+  for (const key of ['largeAmount', 'dateTolerance', 'varianceRate']) amountField(data.settings || {}, key, '阈值设置')
+  if (data.settings?.dateTolerance !== undefined && (!Number.isInteger(data.settings.dateTolerance) || data.settings.dateTolerance > 31)) throw new Error('备份中的日期容差无效')
+  collection(data, 'todos', '待办', row => {
+    textField(row, 'text', '待办内容', 2000, true)
+    textField(row, 'category', '待办分类')
+    if (!isValidDateKey(row.due) || typeof row.done !== 'boolean' || !['高', '中', '低'].includes(row.priority)) throw new Error('备份中的待办日期或状态无效')
+  })
+  collection(data, 'closeTasks', '月结任务', row => {
+    for (const key of ['title', 'owner', 'evidence']) textField(row, key, '月结任务', 2000, key === 'title')
+    if (typeof row.done !== 'boolean') throw new Error('备份中的月结状态无效')
+  })
+  collection(data, 'fieldDictionary', '字段字典', row => {
+    for (const key of ['name', 'type', 'rule']) textField(row, key, '字段字典', 5000, true)
+  })
+  stringList(data, 'favorites', '工作流收藏')
+  stringList(data, 'pinnedFiles', '资料置顶', true)
+  stringList(data, 'recentWorkflows', '最近工作流', true)
+  collection(data, 'exceptions', '异常台账', row => {
+    for (const key of ['title', 'category', 'owner', 'source', 'evidence']) textField(row, key, '异常台账', 2000, key === 'title')
+    amountField(row, 'amount', '异常台账')
+    if (!isValidDateKey(row.due) || !['高', '中', '低'].includes(row.severity) || !EXCEPTION_STATUSES.includes(row.status)) throw new Error('备份中的异常日期或状态无效')
+    if (row.status === '已关闭' && !canCloseFinanceException(row)) throw new Error('备份中存在没有处置证据的已关闭异常')
+    for (const key of ['createdAt', 'updatedAt']) if (row[key] !== undefined && (typeof row[key] !== 'string' || !Number.isFinite(Date.parse(row[key])))) throw new Error('备份中的异常时间无效')
+  }, true)
+  collection(data, 'auditLog', '审计日志', row => {
+    for (const key of ['type', 'action', 'detail']) textField(row, key, '审计日志')
+    if (typeof row.at !== 'string' || !Number.isFinite(Date.parse(row.at))) throw new Error('备份中的日志时间无效')
+  }, true)
+  if (data.snapshots !== undefined) {
+    if (!Array.isArray(data.snapshots) || data.snapshots.length > 10000) throw new Error('备份中的经营快照格式无效')
+    const periods = new Set()
+    for (const row of data.snapshots) {
+      record(row, '经营快照')
+      if (!isValidPeriod(row.period) || periods.has(row.period)) throw new Error('备份中的经营期间无效或重复')
+      periods.add(row.period)
+      for (const key of ['income', 'expense', 'cash', 'receivable', 'payable', 'budget']) amountField(row, key, '经营快照', true)
+      textField(row, 'note', '经营快照备注')
+    }
+  }
+  if (data.theme !== undefined && !['indigo', 'jade', 'sand', 'night'].includes(data.theme)) throw new Error('备份中的主题无效')
   return data
 }
 
@@ -8563,10 +8909,10 @@ export function normalizeFinanceException(item, fallbackDate = localDateKey()) {
     title: String(item?.title || '').trim().slice(0, 120),
     category: String(item?.category || '通用').trim().slice(0, 30),
     severity: ['高', '中', '低'].includes(item?.severity) ? item.severity : '中',
-    amount: Number.isFinite(amount) && amount >= 0 ? amount : 0,
+    amount: Number.isFinite(amount) && amount >= 0 ? Math.round((amount + Number.EPSILON) * 100) / 100 : 0,
     owner: String(item?.owner || '待明确').trim().slice(0, 40) || '待明确',
-    due: /^\d{4}-\d{2}-\d{2}$/.test(String(item?.due || '')) ? String(item.due) : fallbackDate,
-    status: EXCEPTION_STATUSES.includes(item?.status) ? item.status : '未处理',
+    due: isValidDateKey(item?.due) ? item.due : fallbackDate,
+    status: item?.status === '已关闭' && !canCloseFinanceException(item) ? '未处理' : EXCEPTION_STATUSES.includes(item?.status) ? item.status : '未处理',
     source: String(item?.source || '').trim().slice(0, 180),
     evidence: String(item?.evidence || '').trim().slice(0, 300),
     createdAt: String(item?.createdAt || now),
@@ -8592,7 +8938,7 @@ export function summarizeFinanceExceptions(items, settings = {}, today = localDa
     high: open.filter(item => financeExceptionRisk(item, settings, today) >= 60).length,
     overdue: open.filter(item => item.due < today).length,
     waiting: open.filter(item => item.status === '待业务确认').length,
-    amount: open.reduce((sum, item) => sum + item.amount, 0),
+    amount: open.reduce((sum, item) => sum + Math.round(item.amount * 100), 0) / 100,
     closed: rows.length - open.length,
   }
 }
@@ -8602,7 +8948,11 @@ export function canCloseFinanceException(item) {
 }
 
 export function financeExceptionsToCsv(items) {
-  const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`
+  const quote = value => {
+    const text = String(value ?? '')
+    const safe = typeof value === 'string' && /^(\s*[=+\-@]|[\t\r\n])/.test(text) ? `'${text}` : text
+    return `"${safe.replaceAll('"', '""')}"`
+  }
   const header = ['异常事项', '业务模块', '风险等级', '金额影响', '责任人', '截止日期', '状态', '来源依据', '处置证据']
   const rows = (Array.isArray(items) ? items : []).map(item => {
     const row = normalizeFinanceException(item)
@@ -8619,15 +8969,15 @@ export function snapshotProfit(snapshot) {
   const income = Number(snapshot?.income)
   const expense = Number(snapshot?.expense)
   if (snapshot?.income === '' || snapshot?.expense === '' || !Number.isFinite(income) || !Number.isFinite(expense)) return null
-  return income - expense
+  return (Math.round(income * 100) - Math.round(expense * 100)) / 100
 }
 
 export function normalizeFinanceSnapshot(snapshot, fallbackPeriod = localDateKey().slice(0, 7)) {
-  const result = emptyFinanceSnapshot(/^\d{4}-\d{2}$/.test(String(snapshot?.period || '')) ? String(snapshot.period) : fallbackPeriod)
+  const result = emptyFinanceSnapshot(isValidPeriod(snapshot?.period) ? snapshot.period : fallbackPeriod)
   for (const key of ['income', 'expense', 'cash', 'receivable', 'payable', 'budget']) {
     if (snapshot?.[key] === '' || snapshot?.[key] === null || snapshot?.[key] === undefined) continue
     const value = Number(snapshot[key])
-    result[key] = Number.isFinite(value) && value >= 0 ? value : ''
+    result[key] = Number.isFinite(value) && value >= 0 ? Math.round((value + Number.EPSILON) * 100) / 100 : ''
   }
   result.note = String(snapshot?.note || '').trim().slice(0, 300)
   return result
@@ -8649,7 +8999,7 @@ export function workflowsForView(workflows, view) {
 
 ## src/finance-dashboard-styles.js
 
-SHA-256: 44349ca33af9bd8e8a0a39c01c8d748e0b5675f8b969d0b9675d8ae88f073bf3
+SHA-256: 27361879cc2fc28a89cf6fe3c85fcfcead9f718efa1276356cb598c981c96724
 
 ~~~~~~text
 export const FINANCE_DASHBOARD_STYLES = `
@@ -8686,16 +9036,18 @@ export const FINANCE_DASHBOARD_STYLES = `
 .fdDesk_workflowGrid>button>em{position:absolute;right:27px;top:8px;border:1px solid var(--fin-line);border-radius:4px;background:var(--fin-bg);color:var(--fin-muted);padding:2px 4px;font-size:9px;font-style:normal}.fdDesk_workflowIntro{border:1px solid color-mix(in srgb,var(--fin-accent) 42%,var(--fin-line));border-left:4px solid var(--fin-accent);border-radius:12px;background:var(--fin-panel);padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center}.fdDesk_workflowIntro small{font-size:10px;font-weight:760;color:var(--fin-accent-strong);letter-spacing:.7px}.fdDesk_workflowIntro h1{font-size:21px;margin:5px 0}.fdDesk_workflowIntro p{max-width:760px;margin:0;color:var(--fin-muted);font-size:11.5px;line-height:1.6}.fdDesk_workflowIntro ol{list-style:none;margin:0;padding:0;display:flex;gap:12px}.fdDesk_workflowIntro li{display:grid;justify-items:center;gap:5px;color:var(--fin-muted);font-size:10px;white-space:nowrap}.fdDesk_workflowIntro li span{width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--fin-line);border-radius:7px;background:var(--fin-soft);color:var(--fin-accent-strong);font-weight:760}.fdDesk_workflowTools>span{font-size:10px;color:var(--fin-muted)}.fdDesk_beginnerSteps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.fdDesk_beginnerSteps article{min-width:0;border:1px solid var(--fin-line);border-radius:10px;background:var(--fin-panel);padding:12px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:9px;align-items:start}.fdDesk_beginnerSteps article>span{width:28px;height:28px;display:grid;place-items:center;border-radius:7px;background:var(--fin-soft);color:var(--fin-accent-strong);font-size:11px;font-weight:760}.fdDesk_beginnerSteps strong,.fdDesk_beginnerSteps small{display:block}.fdDesk_beginnerSteps strong{font-size:12px}.fdDesk_beginnerSteps small{margin-top:4px;color:var(--fin-muted);font-size:10.5px;line-height:1.5}.fdDesk_sampleRequest{display:flex;align-items:center;gap:12px;border-left:3px solid var(--fin-accent);background:var(--fin-bg);padding:10px 12px}.fdDesk_sampleRequest p{flex:1;margin:0;color:var(--fin-ink);font-size:11.5px;line-height:1.65}.fdDesk_sampleRequest button{flex:none;border:1px solid var(--fin-line);border-radius:7px;background:var(--fin-panel);color:var(--fin-accent-strong);padding:7px 9px}.fdDesk_promptSummary{display:flex;gap:8px;align-items:baseline;padding:10px 12px;border-left:3px solid var(--fin-accent);background:var(--fin-bg)}.fdDesk_promptSummary strong{font-size:11.5px}.fdDesk_promptSummary span{color:var(--fin-muted);font-size:10.5px;line-height:1.55}.fdDesk_promptPreview{max-height:420px;overflow:auto;margin:0;border:1px solid var(--fin-line);border-radius:8px;background:var(--fin-bg);color:var(--fin-ink);padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.7 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
 @container finance-workbench (max-width:760px){.fdDesk_workflowIntro{grid-template-columns:1fr}.fdDesk_workflowIntro ol{justify-content:flex-start}.fdDesk_beginnerSteps{grid-template-columns:1fr}.fdDesk_sampleRequest,.fdDesk_promptSummary{align-items:stretch;flex-direction:column}.fdDesk_sampleRequest button{align-self:flex-start}.fdDesk_steps{grid-template-columns:1fr 1fr}.fdDesk_steps li{border-right:0;border-bottom:1px solid var(--fin-line)}}
 @container finance-workbench (max-width:500px){.fdDesk_workflowIntro{padding:15px}.fdDesk_workflowIntro h1{font-size:20px}.fdDesk_workflowIntro ol{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.fdDesk_workflowIntro li{white-space:normal;text-align:center}.fdDesk_steps{grid-template-columns:1fr}.fdDesk_promptPreview{max-height:320px;font-size:10.5px}.fdDesk_launchBar{align-items:stretch;flex-wrap:wrap}.fdDesk_launchBar>div{flex-basis:100%}}
+
+.fdDesk_storageWarning{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:14px 18px;border:1px solid #b97722;border-radius:12px;background:var(--fin-panel);color:var(--fin-ink);font-size:14px;line-height:1.6}.fdDesk_storageWarning span{flex:1;min-width:180px}.fdDesk_storageWarning button{border:0;border-radius:8px;background:var(--fin-accent);color:white;padding:10px 14px;cursor:pointer;font:inherit}
 `
 
 ~~~~~~
 
 ## src/finance-dashboard.jsx
 
-SHA-256: 18adba8dc6b7aa92c935efff0362a2d10645d57914deb52eaabca3d5a419088b
+SHA-256: 29032dbc72812d851913b5237078b53309e083049662815142c8412eeae1f00e
 
 ~~~~~~text
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { DEFAULT_CLOSE_TASKS, DEFAULT_FIELD_DICTIONARY, FINANCE_MODULES, FINANCE_WORKFLOWS, NAV_GROUPS, SOP_STEPS, WORKFLOW_GROUPS, defaultFinanceTodos } from './finance-data.js'
 import { EXCEPTION_STATUSES, buildFinanceBackup, canCloseFinanceException, closeProgress, dueLabel, emptyFinanceSnapshot, financeExceptionRisk, financeExceptionsToCsv, greetingFor, localDateKey, normalizeFinanceException, normalizeFinanceSnapshot, normalizeTodo, parseFinanceBackup, snapshotProfit, summarizeFinanceExceptions, workflowsForView } from './finance-dashboard-helpers.js'
 import { defaultPinnedPaths, fileKind, filterFiles, matchScenarioFiles, orderFiles, summarizeFiles, topFolder } from './ui-helpers.js'
@@ -8703,7 +9055,9 @@ import { composeFinanceTask } from './task-prompt.js'
 import { filterWorkflowList, recentWorkflowIds } from './workflow-tools.js'
 import { TaskBrief, WorkflowFilter, WorkbenchPolish } from './workflow-tools.jsx'
 
-const STORE_PREFIX = 'dshFinance:desk:v2:'
+import { VERSION } from './version.js'
+import { copyText } from './clipboard.js'
+import { STORE_PREFIX, readFinanceStore, writeFinanceStore, commitFinanceRestore, storageIssueSnapshot, subscribeStorageIssues } from './finance-storage.js'
 const TYPE_LABELS = { all: '全部类型', document: '文档', sheet: '表格', slides: '演示', image: '图片', other: '其他' }
 const PROFILE_DEFAULT = { name: '财务伙伴', entity: '示例财务工作区', role: '财务自动化与管理分析', period: localDateKey().slice(0, 7) }
 const SETTINGS_DEFAULT = { largeAmount: 100000, dateTolerance: 3, varianceRate: 10 }
@@ -8745,16 +9099,23 @@ const MODULE_ASSURANCE = {
   revenue: '发生 · 准确性 · 截止', receivables: '存在 · 计价 · 权利', payables: '完整性 · 截止 · 义务', expenses: '发生 · 准确性 · 授权', treasury: '存在 · 权利 · 授权', budget: '口径一致 · 版本 · 责任', assets: '存在 · 权利 · 计价', tax: '完整性 · 准确性 · 期间', invoices: '真实性 · 唯一性 · 勾稽', payroll: '完整性 · 准确性 · 权限', reconcile: '完整性 · 准确性 · 截止', costing: '完整性 · 计价 · 分摊', statements: '完整性 · 准确性 · 列报', analysis: '口径 · 可比性 · 可解释', investment: '权利 · 计价 · 授权',
 }
 
-function clone(value) { return JSON.parse(JSON.stringify(value)) }
-function readStore(key, fallback) { try { const value = JSON.parse(localStorage.getItem(`${STORE_PREFIX}${key}`)); return value ?? clone(fallback) } catch { return clone(fallback) } }
-function useStoredState(key, fallback) { const initial = typeof fallback === 'function' ? fallback() : fallback; const [value, setValue] = useState(() => readStore(key, initial)); useEffect(() => { try { localStorage.setItem(`${STORE_PREFIX}${key}`, JSON.stringify(value)) } catch {} }, [key, value]); return [value, setValue] }
+function useStoredState(key, fallback) {
+  const initial = typeof fallback === 'function' ? fallback() : fallback
+  const [value, setValue] = useState(() => readFinanceStore(key, initial))
+  const previous = useRef(value)
+  useLayoutEffect(() => {
+    if (Object.is(previous.current, value)) return
+    previous.current = value
+    writeFinanceStore(key, value)
+  }, [key, value])
+  return [value, setValue]
+}
 function makeId(prefix) { return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}` }
 function downloadJson(value, name) { const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = name; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 3000) }
 function downloadText(value, name, type = 'text/plain;charset=utf-8') { const blob = new Blob([value], { type }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = name; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 3000) }
 function formatSize(bytes) { if (bytes < 1024) return `${bytes} B`; if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`; return `${(bytes / 1024 / 1024).toFixed(1)} MB` }
 function formatDate(value) { return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) }
-function formatMoney(value) { if (value === '' || value === null || value === undefined || !Number.isFinite(Number(value))) return '待录入'; return `¥${Number(value).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}` }
-async function copyText(value) { if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value); const textarea = document.createElement('textarea'); textarea.value = value; textarea.style.position = 'fixed'; textarea.style.opacity = '0'; document.body.appendChild(textarea); textarea.select(); const copied = document.execCommand('copy'); textarea.remove(); if (!copied) throw new Error('复制受限') }
+function formatMoney(value) { if (value === '' || value === null || value === undefined || !Number.isFinite(Number(value))) return '待录入'; return `¥${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` }
 
 function Panel({ title, note, action, className = '', children }) { return <section className={`fdDesk_panel ${className}`}><header className="fdDesk_panelHead"><div><h3>{title}</h3>{note && <p>{note}</p>}</div>{action}</header>{children}</section> }
 
@@ -8820,7 +9181,7 @@ function ExceptionCenter({ exceptions, setExceptions, settings, today, onStatus,
     onAudit('异常', '登记', `${item.category} · ${item.title}`)
     onStatus('异常已登记并进入责任闭环')
   }
-  const updateException = (id, patch) => setExceptions(current => current.map(item => item.id === id ? normalizeFinanceException({ ...item, ...patch, updatedAt: new Date().toISOString() }, today) : item))
+  const updateException = (id, patch) => setExceptions(current => current.map(item => { if (item.id !== id) return item; const next = normalizeFinanceException({ ...item, ...patch, updatedAt: new Date().toISOString() }, today); if (item.status === '已关闭' && next.status !== '已关闭') { onAudit('异常', '证据不足，重新打开', item.title); onStatus('处置证据不足，异常已重新打开') }; return next }))
   const changeStatus = (item, status) => {
     if (status === '已关闭' && !canCloseFinanceException(item)) { onStatus('关闭前至少填写 4 个字的处置证据'); return }
     updateException(item.id, { status })
@@ -8852,16 +9213,18 @@ function ManagementModulePage({ module, snapshot, todos, workflows, favorites, o
   return <div className="fdDesk_page"><div className="fdDesk_moduleHero fdDesk_moduleHeroPro"><div><small>{module.eyebrow} · {module.category}</small><h1>{module.title}</h1><p>{module.intro}</p><div><button type="button" onClick={() => workflows[0] && onSelect(workflows[0])}>启动推荐工作流</button><button type="button" className="is-secondary" onClick={onNewTodo}>新建模块待办</button><button type="button" className="is-secondary" onClick={onFiles}>打开资料库</button></div></div><span>{workflows.length}<small>个适用场景</small></span></div><div className="fdDesk_moduleContext"><article><span>主要责任岗位</span><strong>{guide[0]}</strong></article><article><span>建议工作频率</span><strong>{guide[1]}</strong></article><article className="is-focus"><span>新手先从这里开始</span><strong>{guide[2]}</strong></article><article><span>本模块复核断言</span><strong>{assurance}</strong></article></div><div className="fdDesk_moduleMetrics">{module.snapshotKeys.map(([label, key]) => <article key={key}><span>{label}</span><strong>{formatMoney(key === 'profit' ? profit : snapshot[key])}</strong></article>)}<article><span>未完成待办</span><strong>{todoCount}</strong></article><article><span>关键控制点</span><strong>{module.controls.length}</strong></article></div><Panel title="标准处理链路" note="每一步都有输入、判断与可交付结果"><ol className="fdDesk_process">{module.process.map(([title, note], index) => <li key={title}><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{title}</strong><small>{note}</small></div></li>)}</ol></Panel><div className="fdDesk_moduleColumns"><Panel title="关键控制" note="优先检查高影响、不可逆和跨系统事项"><ul className="fdDesk_controlList">{module.controls.map(item => <li key={item}>{item}</li>)}</ul></Panel><Panel title="固定交付物" note="输出名称固定，方便复核、检索与归档"><div className="fdDesk_deliverables">{module.deliverables.map((item, index) => <article key={item}><span>{index + 1}</span><strong>{item}</strong></article>)}</div></Panel></div><Panel title="适用 AI 工作流" note="先看规则与样本，再由人工确认正式结果"><WorkflowCards workflows={workflows} favorites={favorites} onSelect={onSelect}/></Panel></div>
 }
 
-function FileLibrary({ files, workspace, onOpenWorkspace, onChooseFiles, onChooseFolder, onUploadFiles, onReferenceFile, onDownloadFile, onStatus, onAudit }) {
-  const [query, setQuery] = useState(''); const [kind, setKind] = useState('all'); const [folder, setFolder] = useState('all'); const [order, setOrder] = useState('recent'); const [dragging, setDragging] = useState(false); const [pinned, setPinned] = useStoredState('pinnedFiles', [])
+function FileLibrary({ files, workspace, onOpenWorkspace, onChooseFiles, onChooseFolder, onUploadFiles, onReferenceFile, onDownloadFile, onStatus, onAudit, pinnedFiles, setPinnedFiles }) {
+  const [query, setQuery] = useState(''); const [kind, setKind] = useState('all'); const [folder, setFolder] = useState('all'); const [order, setOrder] = useState('recent'); const [dragging, setDragging] = useState(false); const [pinned, setPinned] = [pinnedFiles, setPinnedFiles]
   useEffect(() => { if (!files.length || pinned.length) return; const defaults = defaultPinnedPaths(files); if (defaults.length) setPinned(defaults) }, [files.length])
   const summary = useMemo(() => summarizeFiles(files), [files]); const folders = useMemo(() => [...new Set(files.map(file => topFolder(file.relative)))].sort((a, b) => a.localeCompare(b, 'zh-CN')), [files]); const visible = useMemo(() => orderFiles(filterFiles(files, query, kind, folder), pinned, order), [files, query, kind, folder, pinned, order])
   const togglePin = path => { const pinning = !pinned.includes(path); setPinned(current => current.includes(path) ? current.filter(item => item !== path) : [...current, path]); onAudit('资料库', pinning ? '置顶文件' : '取消置顶', path); onStatus('资料库置顶已更新') }
-  return <div className="fdDesk_page"><div className="fdDesk_directory"><span>库</span><div><small>当前财务资料目录</small><strong>{workspace.name}</strong><em title={workspace.path}>{workspace.path || '等待工作区准备'}</em></div><button type="button" onClick={onOpenWorkspace}>在 Finder 打开</button></div><div className={`fdDesk_dropzone ${dragging ? 'is-dragging' : ''}`} onDragEnter={event => { event.preventDefault(); setDragging(true) }} onDragOver={event => event.preventDefault()} onDragLeave={event => { if (event.currentTarget === event.target) setDragging(false) }} onDrop={event => { event.preventDefault(); setDragging(false); onUploadFiles([...event.dataTransfer.files]) }}><span>＋</span><div><strong>上传并存档财务资料</strong><small>支持文件、文件夹和拖放；原始文件不会被覆盖。</small></div><button type="button" onClick={onChooseFiles}>选择文件</button><button type="button" onClick={onChooseFolder}>选择文件夹</button></div><div className="fdDesk_fileStats">{[['文件', summary.total], ['表格', summary.sheet], ['文档', summary.document], ['图片', summary.image], ['总大小', formatSize(summary.bytes)]].map(([label, value]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div><div className="fdDesk_fileFilters"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索文件名或目录"/><select value={kind} onChange={event => setKind(event.target.value)}>{Object.entries(TYPE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select><select value={folder} onChange={event => setFolder(event.target.value)}><option value="all">全部目录</option>{folders.map(item => <option key={item} value={item}>{item}</option>)}</select><select value={order} onChange={event => setOrder(event.target.value)}><option value="recent">最近更新</option><option value="name">按名称</option><option value="size">按大小</option></select></div><div className="fdDesk_fileHeading"><span>{visible.length} 个结果</span><span>置顶文件优先显示</span></div><div className="fdDesk_fileList">{visible.slice(0, 300).map(file => <article key={file.relative} className={pinned.includes(file.relative) ? 'is-pinned' : ''}><button type="button" className="fdDesk_pin" aria-label={pinned.includes(file.relative) ? `取消置顶${file.name}` : `置顶${file.name}`} onClick={() => togglePin(file.relative)}>{pinned.includes(file.relative) ? '★' : '☆'}</button><span className={`is-${fileKind(file.relative)}`}>{fileKind(file.relative).slice(0, 1).toUpperCase()}</span><div title={file.relative}><strong>{file.name}</strong><small>{file.relative} · {formatSize(file.size)} · {formatDate(file.modifiedAt)}</small></div><button type="button" onClick={() => onReferenceFile(file)}>引用</button><button type="button" onClick={() => onDownloadFile(file)}>下载</button></article>)}{!visible.length && <div className="fdDesk_empty">没有符合条件的文件</div>}</div></div>
+  return <div className="fdDesk_page"><div className="fdDesk_directory"><span>库</span><div><small>当前财务资料目录</small><strong>{workspace.name}</strong><em title={workspace.path}>{workspace.path || '等待工作区准备'}</em></div><button type="button" onClick={onOpenWorkspace}>{workspace.mode === 'index' ? '文件索引说明' : '打开资料目录'}</button></div><div className={`fdDesk_dropzone ${dragging ? 'is-dragging' : ''}`} onDragEnter={event => { event.preventDefault(); setDragging(true) }} onDragOver={event => event.preventDefault()} onDragLeave={event => { if (event.currentTarget === event.target) setDragging(false) }} onDrop={event => { event.preventDefault(); setDragging(false); onUploadFiles([...event.dataTransfer.files]) }}><span>＋</span><div><strong>{workspace.mode === 'index' ? '选择并索引财务资料' : '上传并存档财务资料'}</strong><small>{workspace.mode === 'index' ? '支持文件、文件夹和拖放；执行时请在对话中添加原始附件。' : '支持文件、文件夹和拖放；原始文件不会被覆盖。'}</small></div><button type="button" onClick={onChooseFiles}>选择文件</button><button type="button" onClick={onChooseFolder}>选择文件夹</button></div><div className="fdDesk_fileStats">{[['文件', summary.total], ['表格', summary.sheet], ['文档', summary.document], ['图片', summary.image], ['总大小', formatSize(summary.bytes)]].map(([label, value]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div><div className="fdDesk_fileFilters"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索文件名或目录"/><select value={kind} onChange={event => setKind(event.target.value)}>{Object.entries(TYPE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select><select value={folder} onChange={event => setFolder(event.target.value)}><option value="all">全部目录</option>{folders.map(item => <option key={item} value={item}>{item}</option>)}</select><select value={order} onChange={event => setOrder(event.target.value)}><option value="recent">最近更新</option><option value="name">按名称</option><option value="size">按大小</option></select></div><div className="fdDesk_fileHeading"><span>{visible.length} 个结果</span><span>置顶文件优先显示</span></div><div className="fdDesk_fileList">{visible.slice(0, 300).map(file => <article key={file.relative} className={pinned.includes(file.relative) ? 'is-pinned' : ''}><button type="button" className="fdDesk_pin" aria-label={pinned.includes(file.relative) ? `取消置顶${file.name}` : `置顶${file.name}`} onClick={() => togglePin(file.relative)}>{pinned.includes(file.relative) ? '★' : '☆'}</button><span className={`is-${fileKind(file.relative)}`}>{fileKind(file.relative).slice(0, 1).toUpperCase()}</span><div title={file.relative}><strong>{file.name}</strong><small>{file.relative} · {formatSize(file.size)} · {formatDate(file.modifiedAt)}</small></div><button type="button" onClick={() => onReferenceFile(file)}>引用</button><button type="button" onClick={() => onDownloadFile(file)}>下载</button></article>)}{!visible.length && <div className="fdDesk_empty">没有符合条件的文件</div>}</div></div>
 }
 
 export function FinanceDashboard({ sessionId, files, workspace, status, onStatus, onRefresh, onOpenWorkspace, onChooseFiles, onChooseFolder, onUploadFiles, onReferenceFile, onDownloadFile, onLaunchWorkflow, launching, onClose }) {
   const today = localDateKey(); const [view, setView] = useState('home'); const [mobileNav, setMobileNav] = useState(false); const [selectedWorkflow, setSelectedWorkflow] = useState(null); const [profile, setProfile] = useStoredState('profile', PROFILE_DEFAULT); const [todosRaw, setTodos] = useStoredState('todos', () => defaultFinanceTodos(today)); const todos = useMemo(() => todosRaw.map(item => normalizeTodo(item, today)), [todosRaw, today]); const [closeTasks, setCloseTasks] = useStoredState('closeTasks', DEFAULT_CLOSE_TASKS); const [favorites, setFavorites] = useStoredState('favorites', ['bank-reconcile', 'invoice-ledger', 'month-close-completeness', 'budget-variance']); const [fieldDictionary, setFieldDictionary] = useStoredState('fieldDictionary', DEFAULT_FIELD_DICTIONARY); const [settings, setSettings] = useStoredState('settings', SETTINGS_DEFAULT); const [snapshots, setSnapshots] = useStoredState('snapshots', []); const [auditLog, setAuditLog] = useStoredState('auditLog', []); const [snapshotDraft, setSnapshotDraft] = useState(() => emptyFinanceSnapshot(PROFILE_DEFAULT.period)); const [workflowQuery, setWorkflowQuery] = useState(''); const [workflowGroup, setWorkflowGroup] = useState('all'); const [newTodo, setNewTodo] = useState({ text: '', category: '通用', due: today, priority: '中' }); const [newField, setNewField] = useState({ name: '', type: '文本', rule: '' }); const importPicker = useRef(null)
+  const [pinnedFiles, setPinnedFiles] = useStoredState('pinnedFiles', [])
+  const storageIssue = useSyncExternalStore(subscribeStorageIssues, storageIssueSnapshot, storageIssueSnapshot)
   const [theme, setTheme] = useStoredState('theme', 'indigo')
   const [recent, setRecent] = useStoredState('recentWorkflows', [])
   const [workflowFilter, setWorkflowFilter] = useState('all')
@@ -8870,14 +9233,41 @@ export function FinanceDashboard({ sessionId, files, workspace, status, onStatus
   const summary = useMemo(() => summarizeFiles(files), [files]); const progress = useMemo(() => closeProgress(closeTasks), [closeTasks]); const exceptionSummary = useMemo(() => summarizeFinanceExceptions(exceptions, settings, today), [exceptions, settings, today]); const activeTodos = todos.filter(item => !item.done).sort((a, b) => a.due.localeCompare(b.due) || ['高', '中', '低'].indexOf(a.priority) - ['高', '中', '低'].indexOf(b.priority)); const currentSnapshot = useMemo(() => normalizeFinanceSnapshot(snapshots.find(item => item.period === profile.period) || emptyFinanceSnapshot(profile.period), profile.period), [snapshots, profile.period]); const filteredWorkflows = useMemo(() => filterWorkflowList(FINANCE_WORKFLOWS.filter(item => workflowGroup === 'all' || item.group === workflowGroup), { query: workflowQuery, filter: workflowFilter, favorites, recent }), [workflowQuery, workflowGroup, workflowFilter, favorites, recent]); const featured = favorites.map(id => FINANCE_WORKFLOWS.find(item => item.id === id)).filter(Boolean).slice(0, 4)
   const recordEvent = (type, action, detail = '') => setAuditLog(current => [{ id: makeId('audit'), at: new Date().toISOString(), type, action, detail: String(detail).slice(0, 180) }, ...current].slice(0, 200))
   useEffect(() => { setView('home'); setSelectedWorkflow(null); setMobileNav(false) }, [sessionId]); useEffect(() => { setSnapshotDraft(currentSnapshot) }, [profile.period, snapshots])
-  const changeView = next => { setView(next); setSelectedWorkflow(null); setMobileNav(false) }; const toggleFavorite = workflowId => { const adding = !favorites.includes(workflowId); setFavorites(current => current.includes(workflowId) ? current.filter(item => item !== workflowId) : [...current, workflowId]); recordEvent('工作流', adding ? '收藏' : '取消收藏', workflowId) }; const selectWorkflow = workflow => { setSelectedWorkflow(workflow); setRecent(current => recentWorkflowIds(current, workflow.id)); recordEvent('工作流', '打开流程', workflow.title) }; const launchWorkflow = workflow => { recordEvent('工作流', '启动处理', workflow.title); onLaunchWorkflow(workflow) }
+  const changeView = next => { setView(next); setSelectedWorkflow(null); setMobileNav(false) }; const toggleFavorite = workflowId => { const adding = !favorites.includes(workflowId); setFavorites(current => current.includes(workflowId) ? current.filter(item => item !== workflowId) : [...current, workflowId]); recordEvent('工作流', adding ? '收藏' : '取消收藏', workflowId) }; const selectWorkflow = workflow => { setSelectedWorkflow(workflow); setRecent(current => recentWorkflowIds(current, workflow.id)); recordEvent('工作流', '打开流程', workflow.title) }; const launchWorkflow = workflow => { recordEvent('工作流', '准备任务指令', workflow.title); onLaunchWorkflow(workflow) }
   const copyWorkflowPrompt = async (workflow, mode) => { const value = mode === 'sample' ? workflow.sampleRequest : composeFinanceTask(workflow); try { await copyText(value); recordEvent('工作流', mode === 'sample' ? '复制一句话发起' : '复制完整提示词', workflow.title); onStatus(mode === 'sample' ? '一句话已复制，可粘贴到 AI 对话中' : '完整提示词已复制，记得同时添加原始资料') } catch { onStatus('复制受限，请展开提示词后手动选择复制') } }
   const addTodo = event => { event.preventDefault(); if (!newTodo.text.trim()) return; const todo = normalizeTodo({ ...newTodo, id: makeId('todo') }, today); setTodos(current => [...current, todo]); setNewTodo(current => ({ ...current, text: '' })); recordEvent('待办', '新增', `${todo.category} · ${todo.text}`); onStatus('待办已添加') }
   const saveSnapshot = event => { event.preventDefault(); const value = normalizeFinanceSnapshot(snapshotDraft, profile.period); setSnapshots(current => [...current.filter(item => item.period !== value.period), value].sort((a, b) => a.period.localeCompare(b.period))); recordEvent('总览', '保存经营快照', value.period); onStatus(`${value.period} 经营快照已保存`) }
   const changeTheme = next => { if (!FINANCE_THEMES.some(item => item.id === next)) return; setTheme(next); recordEvent('设置', '切换主题', next) }
-  const exportData = () => { downloadJson(buildFinanceBackup({ profile, todos, closeTasks, favorites, fieldDictionary, settings, snapshots, auditLog, exceptions, theme }), `DeepSeek-Harness-财务工作台-${today}.json`); recordEvent('备份', '导出 JSON', today); onStatus('财务工作台 JSON 备份已导出') }
-  const importData = file => { const reader = new FileReader(); reader.onload = () => { try { const data = parseFinanceBackup(reader.result); setProfile({ ...PROFILE_DEFAULT, ...data.profile }); setTodos(data.todos.map(item => normalizeTodo(item, today))); setCloseTasks(data.closeTasks); setFavorites(data.favorites); setFieldDictionary(data.fieldDictionary); setSettings({ ...SETTINGS_DEFAULT, ...data.settings }); setSnapshots(Array.isArray(data.snapshots) ? data.snapshots.map(item => normalizeFinanceSnapshot(item)) : []); setAuditLog(Array.isArray(data.auditLog) ? data.auditLog.slice(0, 200) : []); setExceptions(Array.isArray(data.exceptions) ? data.exceptions.map(item => normalizeFinanceException(item, today)) : []); if (FINANCE_THEMES.some(item => item.id === data.theme)) setTheme(data.theme); recordEvent('备份', '恢复 JSON', file.name); onStatus('财务工作台备份已恢复') } catch (error) { onStatus(error instanceof Error ? error.message : String(error)) } }; reader.readAsText(file) }
-  const frameProps = { view, profile, status, mobileNav, setMobileNav, changeView, theme, setTheme: changeTheme, onRefresh, onOpenWorkspace, onClose }
+  const currentBackup = () => buildFinanceBackup({ profile, todos, closeTasks, favorites, fieldDictionary, settings, snapshots, auditLog, exceptions, theme, pinnedFiles, recentWorkflows: recent })
+  const exportData = () => { downloadJson(currentBackup(), `财务工作台-${today}.json`); recordEvent('备份', '导出 JSON', today); onStatus('财务工作台 JSON 备份已导出') }
+  const downloadRollback = () => {
+    try {
+      const raw = localStorage.getItem(`${STORE_PREFIX}beforeRestore`)
+      if (!raw) { onStatus('当前没有恢复前副本'); return }
+      downloadJson(parseFinanceBackup(raw), `财务工作台-恢复前-${today}.json`)
+      onStatus('恢复前副本已导出，可通过恢复 JSON 备份还原')
+    } catch { onStatus('无法读取恢复前副本，请检查本机存储权限') }
+  }
+  const importData = async file => {
+    try {
+      if (file.size > 5 * 1024 * 1024) throw new Error('备份超过 5 MB，请拆分或整理后重试')
+      const data = parseFinanceBackup(await file.text())
+      const restored = {
+        ...data,
+        profile: { ...PROFILE_DEFAULT, ...data.profile }, settings: { ...SETTINGS_DEFAULT, ...data.settings },
+        snapshots: data.snapshots || [], auditLog: (data.auditLog || []).slice(0, 200), exceptions: data.exceptions || [],
+        theme: data.theme || theme, pinnedFiles: data.pinnedFiles ?? pinnedFiles, recentWorkflows: data.recentWorkflows ?? recent,
+      }
+      commitFinanceRestore(currentBackup(), restored)
+      setProfile(restored.profile); setTodos(restored.todos); setCloseTasks(restored.closeTasks); setFavorites(restored.favorites)
+      setFieldDictionary(restored.fieldDictionary); setSettings(restored.settings); setSnapshots(restored.snapshots)
+      setAuditLog(restored.auditLog); setExceptions(restored.exceptions); setTheme(restored.theme)
+      setPinnedFiles(restored.pinnedFiles); setRecent(restored.recentWorkflows)
+      recordEvent('备份', '恢复 JSON', file.name)
+      onStatus('备份已恢复；恢复前数据已保留，可下载恢复前副本')
+    } catch (error) { onStatus(error instanceof Error ? error.message : String(error)) }
+  }
+  const frameProps = { storageIssue, onExportBackup: exportData, view, profile, status, mobileNav, setMobileNav, changeView, theme, setTheme: changeTheme, onRefresh, onOpenWorkspace, onClose }
   if (selectedWorkflow) return <FinanceDashboardFrame {...frameProps}><WorkflowDetail key={selectedWorkflow.id} workflow={selectedWorkflow} files={files} favorites={favorites} launching={launching} onBack={() => setSelectedWorkflow(null)} onFavorite={toggleFavorite} onLaunch={launchWorkflow} onCopyPrompt={copyWorkflowPrompt} onChooseFiles={onChooseFiles} onChooseFolder={onChooseFolder}/></FinanceDashboardFrame>
   let content
   if (view === 'home') content = <OverviewPage profile={profile} snapshot={currentSnapshot} snapshots={snapshots} draft={snapshotDraft} setDraft={setSnapshotDraft} saveSnapshot={saveSnapshot} activeTodos={activeTodos} setTodos={setTodos} progress={progress} closeTasks={closeTasks} exceptionSummary={exceptionSummary} featured={featured} favorites={favorites} summary={summary} changeView={changeView} onSelectWorkflow={selectWorkflow}/>
@@ -8887,16 +9277,16 @@ export function FinanceDashboard({ sessionId, files, workspace, status, onStatus
   else if (FINANCE_MODULES[view] && view !== 'audit') { const module = FINANCE_MODULES[view]; const workflows = module.workflowIds.map(id => FINANCE_WORKFLOWS.find(item => item.id === id)).filter(Boolean); content = <ManagementModulePage module={module} snapshot={currentSnapshot} todos={todos} workflows={workflows} favorites={favorites} onSelect={selectWorkflow} onNewTodo={() => { setNewTodo(current => ({ ...current, category: module.todoCategories[0] || '通用' })); changeView('todos') }} onFiles={() => changeView('files')}/> }
   else if (view === 'audit') content = <div className="fdDesk_page"><div className="fdDesk_moduleHero fdDesk_moduleHeroPro"><div><small>AUDIT TRAIL · 治理与系统</small><h1>关键动作有迹可循</h1><p>记录工作台内的新增、恢复、启动、收藏和设置变更；日志仅保存在本机。</p></div><span>{auditLog.length}<small>条本机记录</small></span></div><Panel title="操作日志" note="最多保留最近 200 条" action={<button className="fdDesk_textButton" type="button" onClick={() => downloadJson(auditLog, `财务工作台-审计日志-${today}.json`)}>导出日志</button>}><div className="fdDesk_auditList">{auditLog.map(item => <article key={item.id}><time>{formatDate(item.at)}</time><span>{item.type}</span><div><strong>{item.action}</strong>{item.detail && <small>{item.detail}</small>}</div></article>)}{!auditLog.length && <div className="fdDesk_empty">完成一次新增、备份或工作流操作后，这里会出现留痕。</div>}</div></Panel></div>
   else if (view === 'close') content = <div className="fdDesk_page"><div className="fdDesk_moduleHero fdDesk_moduleHeroPro"><div><small>MONTH-END CONTROL</small><h1>月结不是“做完”，而是“有证据地完成”</h1><p>逐项确认责任人、证据、差异状态与预计完成时间。</p></div><span>{progress.percent}%<small>完成度</small></span></div><div className="fdDesk_closeGrid"><Panel title="月结任务清单" note="勾选表示已取得完成证据"><div className="fdDesk_closeTasks">{closeTasks.map(item => <label key={item.id} className={item.done ? 'is-done' : ''}><input type="checkbox" checked={item.done} onChange={() => { setCloseTasks(current => current.map(row => row.id === item.id ? { ...row, done: !row.done } : row)); recordEvent('月结', item.done ? '撤销完成' : '确认完成', item.title) }}/><span><strong>{item.title}</strong><small>{item.owner} · 证据：{item.evidence}</small></span></label>)}</div></Panel><Panel title="适用工作流" note="异常检查、资料完整性和归档"><WorkflowCards workflows={workflowsForView(FINANCE_WORKFLOWS, 'close')} favorites={favorites} onSelect={selectWorkflow}/></Panel></div></div>
-  else if (view === 'files') content = <FileLibrary files={files} workspace={workspace} onOpenWorkspace={onOpenWorkspace} onChooseFiles={onChooseFiles} onChooseFolder={onChooseFolder} onUploadFiles={onUploadFiles} onReferenceFile={onReferenceFile} onDownloadFile={onDownloadFile} onStatus={onStatus} onAudit={recordEvent}/>
-  else if (view === 'backup') content = <div className="fdDesk_page"><div className="fdDesk_backupHero"><small>LOCAL-FIRST BACKUP</small><h1>把可复刻的数据带走</h1><p>备份经营快照、待办、异常台账、月结清单、收藏、字段字典、阈值和审计日志；财务原始资料继续留在工作区目录。</p><div><button type="button" onClick={exportData}>导出 JSON 备份</button><button type="button" className="is-secondary" onClick={() => importPicker.current?.click()}>恢复 JSON 备份</button></div></div><div className="fdDesk_backupStats">{[[snapshots.length, '经营期间'], [todos.length, '待办记录'], [exceptions.length, '异常记录'], [fieldDictionary.length, '字段规则'], [auditLog.length, '审计日志']].map(([value, label]) => <article key={label}><strong>{value}</strong><span>{label}</span></article>)}</div><Panel title="新手恢复说明" note="先导出一份当前备份，再导入历史文件"><ol className="fdDesk_restoreSteps"><li><span>1</span><div><strong>导出当前数据</strong><small>保留一份恢复前的回滚副本。</small></div></li><li><span>2</span><div><strong>选择 JSON 文件</strong><small>系统会先检查产品标识和数据结构。</small></div></li><li><span>3</span><div><strong>核对主体与期间</strong><small>恢复后检查首页数字、异常、待办和字段字典。</small></div></li></ol></Panel><input ref={importPicker} hidden type="file" accept="application/json,.json" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) importData(file) }}/></div>
+  else if (view === 'files') content = <FileLibrary files={files} workspace={workspace} onOpenWorkspace={onOpenWorkspace} onChooseFiles={onChooseFiles} onChooseFolder={onChooseFolder} onUploadFiles={onUploadFiles} onReferenceFile={onReferenceFile} onDownloadFile={onDownloadFile} onStatus={onStatus} onAudit={recordEvent} pinnedFiles={pinnedFiles} setPinnedFiles={setPinnedFiles}/>
+  else if (view === 'backup') content = <div className="fdDesk_page"><div className="fdDesk_backupHero"><small>LOCAL-FIRST BACKUP</small><h1>把可复刻的数据带走</h1><p>备份经营快照、待办、异常台账、月结清单、收藏、字段字典、阈值和审计日志；财务原始资料继续留在工作区目录。</p><div><button type="button" onClick={exportData}>导出 JSON 备份</button><button type="button" className="is-secondary" onClick={() => importPicker.current?.click()}>恢复 JSON 备份</button><button type="button" className="is-secondary" onClick={downloadRollback}>下载恢复前副本</button></div></div><div className="fdDesk_backupStats">{[[snapshots.length, '经营期间'], [todos.length, '待办记录'], [exceptions.length, '异常记录'], [fieldDictionary.length, '字段规则'], [auditLog.length, '审计日志']].map(([value, label]) => <article key={label}><strong>{value}</strong><span>{label}</span></article>)}</div><Panel title="新手恢复说明" note="先导出一份当前备份，再导入历史文件"><ol className="fdDesk_restoreSteps"><li><span>1</span><div><strong>导出当前数据</strong><small>保留一份恢复前的回滚副本。</small></div></li><li><span>2</span><div><strong>选择 JSON 文件</strong><small>逐项检查数据、日期和关闭证据；恢复前自动保留副本。</small></div></li><li><span>3</span><div><strong>核对主体与期间</strong><small>恢复后检查首页数字、异常、待办和字段字典。</small></div></li></ol></Panel><input ref={importPicker} hidden type="file" accept="application/json,.json" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) importData(file) }}/></div>
   else content = <div className="fdDesk_page"><div className="fdDesk_settingsGrid"><Panel title="个人与期间设置" note="仅用于本机工作台显示"><div className="fdDesk_settingsForm"><label>称呼<input value={profile.name} onChange={event => setProfile(current => ({ ...current, name: event.target.value }))}/></label><label>主体 / 工作区<input value={profile.entity} onChange={event => setProfile(current => ({ ...current, entity: event.target.value }))}/></label><label>岗位定位<input value={profile.role} onChange={event => setProfile(current => ({ ...current, role: event.target.value }))}/></label><label>当前期间<input type="month" value={profile.period} onChange={event => setProfile(current => ({ ...current, period: event.target.value }))}/></label></div></Panel><Panel title="关键阈值" note="用于筛选和提醒，不替代财务判断"><div className="fdDesk_settingsForm"><label>大额提醒（元）<input type="number" min="0" value={settings.largeAmount} onChange={event => setSettings(current => ({ ...current, largeAmount: Number(event.target.value) }))}/></label><label>对账日期容差（天）<input type="number" min="0" max="31" value={settings.dateTolerance} onChange={event => setSettings(current => ({ ...current, dateTolerance: Number(event.target.value) }))}/></label><label>异常变化阈值（%）<input type="number" min="0" value={settings.varianceRate} onChange={event => setSettings(current => ({ ...current, varianceRate: Number(event.target.value) }))}/></label></div></Panel></div><Panel title="字段字典" note="把口头经验写成可重复使用的字段规则"><div className="fdDesk_dictionary">{fieldDictionary.map(item => <article key={item.id}><div><strong>{item.name}</strong><small>{item.type}</small></div><p>{item.rule}</p><button type="button" onClick={() => { setFieldDictionary(current => current.filter(row => row.id !== item.id)); recordEvent('设置', '删除字段规则', item.name) }}>×</button></article>)}</div><form className="fdDesk_fieldForm" onSubmit={event => { event.preventDefault(); if (!newField.name.trim() || !newField.rule.trim()) return; setFieldDictionary(current => [...current, { ...newField, id: makeId('field') }]); recordEvent('设置', '新增字段规则', newField.name); setNewField({ name: '', type: '文本', rule: '' }); onStatus('字段规则已添加') }}><input value={newField.name} onChange={event => setNewField(current => ({ ...current, name: event.target.value }))} placeholder="字段名称"/><select value={newField.type} onChange={event => setNewField(current => ({ ...current, type: event.target.value }))}>{['文本', '数值', '日期', '枚举', '布尔'].map(item => <option key={item}>{item}</option>)}</select><input value={newField.rule} onChange={event => setNewField(current => ({ ...current, rule: event.target.value }))} placeholder="口径、必填、唯一性或取值规则"/><button type="submit">添加字段</button></form></Panel><Panel title="8 步自动化搭建法" note="先诊断、后执行；先小样本、后全量"><div className="fdDesk_sopGrid">{SOP_STEPS.map(([no, title, note]) => <article key={no}><span>{no}</span><div><strong>{title}</strong><small>{note}</small></div></article>)}</div></Panel></div>
   if (view === 'settings') content = <div className="fdDesk_page"><Panel title="界面主题" note="主题会保存在本机，也会随 JSON 备份一起导出"><ThemePicker theme={theme} onChange={changeTheme}/></Panel><div className="fdDesk_settingsNested">{content}</div></div>
   return <FinanceDashboardFrame {...frameProps}>{content}</FinanceDashboardFrame>
 }
 
-function FinanceDashboardFrame({ view, profile, status, mobileNav, setMobileNav, changeView, theme, setTheme, onRefresh, onOpenWorkspace, onClose, children }) {
+function FinanceDashboardFrame({ storageIssue, onExportBackup, view, profile, status, mobileNav, setMobileNav, changeView, theme, setTheme, onRefresh, onOpenWorkspace, onClose, children }) {
   const meta = PAGE_META[view] || ['财务工作台', '专业财务自动化与经营管理']; const utility = [['todos', '待办'], ['exceptions', '异常'], ['workflows', '工作流'], ['files', '资料库'], ['close', '月结']]
-  return <section className="dfinance_panel dfinance_embedded fdDesk_root" data-theme={theme} aria-label="财务工作台"><WorkbenchPolish/><aside className={`fdDesk_sidebar ${mobileNav ? 'is-open' : ''}`}><div className="fdDesk_identity"><span>财</span><div><strong>财务管理工作台</strong><small>{profile.entity}</small></div><button type="button" onClick={() => setMobileNav(false)} aria-label="关闭导航">×</button></div><nav aria-label="财务工作台导航">{NAV_GROUPS.map((group, index) => <div className="fdDesk_navGroup" key={group.label || index}>{group.label && <small>{group.label}</small>}{group.items.map(([key, label, icon]) => <button type="button" key={key} className={view === key ? 'is-active' : ''} onClick={() => changeView(key)}><span>{icon}</span><strong>{label}</strong></button>)}</div>)}</nav><footer><strong>{profile.period}</strong><span><i/>数据与设置保存在本机</span></footer></aside>{mobileNav && <button type="button" className="fdDesk_mobileMask" aria-label="关闭导航蒙层" onClick={() => setMobileNav(false)}/>}<div className="fdDesk_main"><header className="fdDesk_topbar"><button type="button" className="fdDesk_menu" onClick={() => setMobileNav(true)} aria-label="打开导航">☰</button><div><h2>{meta[0]}</h2><p>{meta[1]}</p></div><div className="fdDesk_toolNav">{utility.map(([key, label]) => <button type="button" key={key} className={view === key ? 'is-active' : ''} onClick={() => changeView(key)}>{label}</button>)}</div><div className="fdDesk_themeMiniWrap"><small>主题</small><ThemePicker theme={theme} onChange={setTheme} compact/></div><span>{new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}</span><button type="button" className="fdDesk_return" onClick={onClose}>返回对话</button></header><div className="fdDesk_status"><i/><span>{status}</span><button type="button" onClick={onOpenWorkspace}>打开目录</button><button type="button" onClick={onRefresh}>刷新</button></div><main className="fdDesk_content">{children}</main></div></section>
+  return <section className="dfinance_panel dfinance_embedded fdDesk_root" data-theme={theme} aria-label="财务工作台"><WorkbenchPolish/><aside className={`fdDesk_sidebar ${mobileNav ? 'is-open' : ''}`}><div className="fdDesk_identity"><span>财</span><div><strong>财务管理工作台</strong><small>{profile.entity}</small></div><button type="button" onClick={() => setMobileNav(false)} aria-label="关闭导航">×</button></div><nav aria-label="财务工作台导航">{NAV_GROUPS.map((group, index) => <div className="fdDesk_navGroup" key={group.label || index}>{group.label && <small>{group.label}</small>}{group.items.map(([key, label, icon]) => <button type="button" key={key} className={view === key ? 'is-active' : ''} onClick={() => changeView(key)}><span>{icon}</span><strong>{label}</strong></button>)}</div>)}</nav><footer><strong>{profile.period} · v{VERSION}</strong><span><i/>数据与设置保存在本机</span></footer></aside>{mobileNav && <button type="button" className="fdDesk_mobileMask" aria-label="关闭导航蒙层" onClick={() => setMobileNav(false)}/>}<div className="fdDesk_main"><header className="fdDesk_topbar"><button type="button" className="fdDesk_menu" onClick={() => setMobileNav(true)} aria-label="打开导航">☰</button><div><h2>{meta[0]}</h2><p>{meta[1]}</p></div><div className="fdDesk_toolNav">{utility.map(([key, label]) => <button type="button" key={key} className={view === key ? 'is-active' : ''} onClick={() => changeView(key)}>{label}</button>)}</div><div className="fdDesk_themeMiniWrap"><small>主题</small><ThemePicker theme={theme} onChange={setTheme} compact/></div><span>{new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}</span><button type="button" className="fdDesk_return" onClick={onClose}>返回对话</button></header><div className="fdDesk_status"><i/><span>{status}</span><button type="button" onClick={onOpenWorkspace}>打开目录</button><button type="button" onClick={onRefresh}>刷新</button></div><main className="fdDesk_content">{storageIssue && <div className="fdDesk_storageWarning" role="alert"><span>{storageIssue}</span><button type="button" onClick={onExportBackup}>导出 JSON 备份</button></div>}{children}</main></div></section>
 }
 
 ~~~~~~
@@ -9332,15 +9722,99 @@ export const SOP_STEPS = [
 
 ~~~~~~
 
+## src/finance-storage.js
+
+SHA-256: 0deed85672294424ea19a8e6642d6f5ec7e08bf0ff5375115f9673c2d51bc794
+
+~~~~~~text
+import { validateFinanceState } from './finance-dashboard-helpers.js'
+
+export const STORE_PREFIX = 'dshFinance:desk:v2:'
+const issues = new Map()
+const listeners = new Set()
+
+function report(key, message) {
+  if (message) issues.set(key, message)
+  else issues.delete(key)
+  for (const listener of listeners) listener()
+}
+
+export const storageIssueSnapshot = () => [...new Set(issues.values())].join('；')
+export function subscribeStorageIssues(listener) {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+export function readFinanceStore(key, fallback, storage) {
+  try {
+    storage ??= globalThis.localStorage
+    const raw = storage.getItem(`${STORE_PREFIX}${key}`)
+    if (raw === null) return structuredClone(fallback)
+    const value = JSON.parse(raw)
+    validateFinanceState({ todos: [], closeTasks: [], favorites: [], fieldDictionary: [], [key]: value })
+    return ['profile', 'settings'].includes(key) ? { ...fallback, ...value } : value
+  } catch {
+    report(key, '部分本机数据无法读取，原存储已保留。请先导出备份，再检查或恢复历史备份')
+    return structuredClone(fallback)
+  }
+}
+
+export function writeFinanceStore(key, value, storage) {
+  try {
+    storage ??= globalThis.localStorage
+    storage.setItem(`${STORE_PREFIX}${key}`, JSON.stringify(value))
+    report(key, '')
+    return true
+  } catch {
+    report(key, '本机保存未完成，刷新或退出可能丢失本次修改。请立即导出 JSON 备份')
+    return false
+  }
+}
+
+// Keep a complete rollback copy and roll back every affected key on write failure.
+export function commitFinanceRestore(current, restored, storage) {
+  const keys = ['profile', 'todos', 'closeTasks', 'favorites', 'fieldDictionary', 'settings', 'snapshots', 'auditLog', 'exceptions', 'theme', 'pinnedFiles', 'recentWorkflows']
+  let originals
+  try {
+    storage ??= globalThis.localStorage
+    originals = keys.map(key => [key, storage.getItem(`${STORE_PREFIX}${key}`)])
+    storage.setItem(`${STORE_PREFIX}beforeRestore`, JSON.stringify(current))
+  } catch { throw new Error('无法保留恢复前副本，请先导出当前 JSON 备份并检查本机存储权限或空间') }
+  const written = []
+  try {
+    for (const key of keys) {
+      storage.setItem(`${STORE_PREFIX}${key}`, JSON.stringify(restored[key]))
+      written.push(key)
+    }
+  } catch {
+    let rollbackFailed = false
+    for (const key of written) {
+      try { storage.removeItem(`${STORE_PREFIX}${key}`) } catch { rollbackFailed = true }
+    }
+    for (const [key, raw] of originals) if (written.includes(key) && raw !== null) {
+      try { storage.setItem(`${STORE_PREFIX}${key}`, raw) } catch { rollbackFailed = true }
+    }
+    if (rollbackFailed) {
+      report('restore', '恢复被存储权限中断，恢复前副本已保留；请重新允许存储后下载并恢复该副本')
+      throw new Error(storageIssueSnapshot())
+    }
+    throw new Error('备份恢复未完成：本机存储不可写或空间不足，原数据已保留')
+  }
+  report('restore', '')
+  for (const key of keys) report(key, '')
+}
+
+~~~~~~
+
 ## src/index.js
 
-SHA-256: cd0336debed4ceb75bcbf24b3d865f8d2306e2f3ad89830d32303743bc6f7ce0
+SHA-256: 5f2860ab7f83012b8313ca37cb57c391e4f770c097feb231eb7340d1548ce9e2
 
 ~~~~~~text
 import { randomUUID } from 'node:crypto'
 import { constants } from 'node:fs'
 import { execFile } from 'node:child_process'
-import { appendFile, copyFile, mkdir, open, opendir, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises'
+import { copyFile, lstat, mkdir, open, opendir, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { promisify } from 'node:util'
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
@@ -9411,6 +9885,28 @@ async function workspaceRoot(agent) {
   return realpath(cwd)
 }
 
+async function checkedDirectory(root, directory, create = false) {
+  if (!isInside(root, directory)) throw new Error('路径超出当前工作区')
+  let current = root
+  for (const segment of relative(root, directory).split(sep).filter(Boolean)) {
+    current = join(current, segment)
+    if (create) {
+      try { await mkdir(current) } catch (error) { if (error?.code !== 'EEXIST') throw error }
+    }
+    const info = await lstat(current)
+    if (info.isSymbolicLink() || !info.isDirectory()) throw new Error('目标目录包含符号链接或不是普通目录')
+    if (!isInside(root, await realpath(current))) throw new Error('目录指向工作区之外')
+  }
+  return directory
+}
+
+async function checkedUpload(upload) {
+  await checkedDirectory(upload.root, dirname(upload.temp))
+  const info = await lstat(upload.temp)
+  if (info.isSymbolicLink() || !info.isFile()) throw new Error('上传临时文件无效')
+  await checkedDirectory(upload.root, dirname(upload.destination))
+}
+
 async function publishUpload(temp, directory, name) {
   const dot = name.lastIndexOf('.')
   const stem = dot > 0 ? name.slice(0, dot) : name
@@ -9449,23 +9945,24 @@ export class FinanceFilesService extends TypertRemoteService {
   purgeExpired() {
     const deadline = Date.now() - 15 * 60 * 1000
     for (const [id, upload] of this.uploads) {
-      if (upload.createdAt >= deadline) continue
+      if (upload.busy || (upload.updatedAt || upload.createdAt) >= deadline) continue
       this.uploads.delete(id)
-      void unlink(upload.temp).catch(() => {})
+      void checkedUpload(upload).then(() => unlink(upload.temp)).catch(() => {})
     }
   }
 
   async beginUpload(agent, request) {
     this.purgeExpired()
+    if (this.uploads.size >= 32) throw new Error('未完成上传过多，请稍后重试')
     const root = await workspaceRoot(agent)
     const relativeName = safeUploadRelativePath(request.relativePath, request.name)
     if (!Number.isSafeInteger(request.size) || request.size < 0) throw new Error('文件大小无效')
     if (request.size > MAX_FILE_BYTES) throw new Error('单个文件不能超过 50 MB')
     const uploadDirectory = join(root, '财务资料')
-    await mkdir(uploadDirectory, { recursive: true })
+    await checkedDirectory(root, uploadDirectory, true)
     const requestedDestination = resolve(uploadDirectory, relativeName)
     if (!isInside(uploadDirectory, requestedDestination)) throw new Error('上传路径超出财务资料目录')
-    await mkdir(dirname(requestedDestination), { recursive: true })
+    await checkedDirectory(root, dirname(requestedDestination), true)
     const destination = requestedDestination
     const uploadId = randomUUID()
     const temp = join(uploadDirectory, `.dsh-finance-upload-${uploadId}.part`)
@@ -9477,18 +9974,25 @@ export class FinanceFilesService extends TypertRemoteService {
   }
 
   async uploadChunk(agent, request) {
+    this.purgeExpired()
     const root = await workspaceRoot(agent)
     const upload = this.uploads.get(request.uploadId)
     if (!upload || upload.root !== root) throw new Error('上传任务已失效，请重新选择文件')
     if (upload.busy) throw new Error('上传任务正忙，请稍候重试')
+    if (!Number.isSafeInteger(request.offset) || request.offset < 0) throw new Error('上传偏移无效')
     if (request.offset !== upload.received) throw new Error('上传分块顺序不正确')
+    if (typeof request.data !== 'string' || request.data.length > Math.ceil(CHUNK_BYTES / 3) * 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(request.data) || request.data.length % 4 !== 0) throw new Error('上传分块编码无效')
     const bytes = Buffer.from(request.data, 'base64')
+    if (bytes.toString('base64') !== request.data) throw new Error('上传分块编码无效')
     if (bytes.length > CHUNK_BYTES) throw new Error('上传分块过大')
     if (upload.received + bytes.length > upload.size || upload.received + bytes.length > MAX_FILE_BYTES) throw new Error('上传大小与声明不一致')
     upload.busy = true
     try {
-      await appendFile(upload.temp, bytes)
+      await checkedUpload(upload)
+      const handle = await open(upload.temp, constants.O_WRONLY | constants.O_APPEND | (constants.O_NOFOLLOW || 0))
+      try { await handle.writeFile(bytes) } finally { await handle.close() }
       upload.received += bytes.length
+      upload.updatedAt = Date.now()
       return { received: upload.received }
     } finally {
       upload.busy = false
@@ -9496,6 +10000,7 @@ export class FinanceFilesService extends TypertRemoteService {
   }
 
   async finishUpload(agent, request) {
+    this.purgeExpired()
     const root = await workspaceRoot(agent)
     const upload = this.uploads.get(request.uploadId)
     if (!upload || upload.root !== root) throw new Error('上传任务已失效，请重新选择文件')
@@ -9503,6 +10008,7 @@ export class FinanceFilesService extends TypertRemoteService {
     if (upload.received !== upload.size) throw new Error(`文件尚未上传完整：${upload.received}/${upload.size}`)
     upload.busy = true
     try {
+      await checkedUpload(upload)
       const destination = await publishUpload(upload.temp, dirname(upload.destination), basename(upload.destination))
       this.uploads.delete(request.uploadId)
       // Cleanup failure must not turn a successful upload into a retry/duplicate.
@@ -9552,11 +10058,12 @@ export class FinanceFilesService extends TypertRemoteService {
   }
 
   async downloadChunk(agent, request) {
+    if (!Number.isSafeInteger(request.offset) || request.offset < 0 || !Number.isSafeInteger(request.length) || request.length < 1) throw new Error('下载偏移或长度无效')
     const root = await workspaceRoot(agent)
     const { actual, info } = await resolvedWorkspaceFile(root, request.relative)
     const start = Math.min(request.offset, info.size)
     const length = Math.min(request.length, CHUNK_BYTES, info.size - start)
-    const handle = await open(actual, 'r')
+    const handle = await open(actual, constants.O_RDONLY | (constants.O_NOFOLLOW || 0))
     try {
       const buffer = Buffer.alloc(length)
       const { bytesRead } = await handle.read(buffer, 0, length, start)
@@ -9591,7 +10098,7 @@ export class FinanceFilesService extends TypertRemoteService {
     const directory = join(root, '财务工作台', '内置工作流')
     const destination = join(directory, workflowSnapshotName(id))
     if (!isInside(root, destination)) throw new Error('工作流路径超出当前工作区')
-    await mkdir(directory, { recursive: true })
+    await checkedDirectory(root, directory, true)
     const temp = join(directory, `.${id}-${randomUUID()}.tmp`)
     const content = `# ${request.title}\n\n${request.content.trim()}\n`
     await writeFile(temp, content, { encoding: 'utf8', mode: 0o600 })
@@ -9799,9 +10306,19 @@ export function matchScenarioFiles(files, scenario, limit = 8) {
 
 ~~~~~~
 
+## src/version.js
+
+SHA-256: 3f2a8a366fa14149df2cd698102436742276b9568b57c88fb5362a3925cdc42c
+
+~~~~~~text
+// Generated from package.json by scripts/sync-version.mjs.
+export const VERSION = '2.7.0'
+
+~~~~~~
+
 ## src/workbuddy-mcp-server.mjs
 
-SHA-256: 8571ca1b349e11c97f70ea06c8a2cdf3f8388729c9a62a519901a151654faeed
+SHA-256: 6d6468fe29b57e254c5018f40aa94f8be64b0b868b858b07dd95458666c72456
 
 ~~~~~~text
 import { readFileSync } from 'node:fs'
@@ -9810,20 +10327,23 @@ import { fileURLToPath } from 'node:url'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
+import { VERSION } from './version.js'
+
 const APP_URI = 'ui://workbuddy-finance-workbench/dashboard'
 const APP_MIME = 'text/html;profile=mcp-app'
 const currentDirectory = dirname(fileURLToPath(import.meta.url))
 const widgetHtml = readFileSync(join(currentDirectory, 'widget.html'), 'utf8')
 
-const server = new McpServer({ name: 'workbuddy-finance-workbench', version: '2.6.0' })
+const server = new McpServer({ name: 'workbuddy-finance-workbench', version: VERSION })
 
 server.registerTool('show_finance_workbench', {
   title: '打开 WorkBuddy 财务工作台',
   description: '打开完整的交互式财务工作台，包含总览、往来、核算、异常、月结、资料索引、备份和 25 个财务工作流。用户说“打开财务工作台”或需要财务控制面板时使用。',
+  annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   _meta: { ui: { resourceUri: APP_URI } },
 }, async () => ({
   content: [{ type: 'text', text: 'WorkBuddy 财务工作台已打开。终端环境会自动降级为本段文字；Web UI 会渲染完整交互界面。' }],
-  structuredContent: { version: '2.6.0', modules: 20, workflows: 25, prompts: 25, mode: 'interactive-widget' },
+  structuredContent: { version: VERSION, modules: 20, workflows: 25, prompts: 25, mode: 'interactive-widget' },
   _meta: { ui: { resourceUri: APP_URI } },
 }))
 
@@ -9859,7 +10379,7 @@ await server.connect(new StdioServerTransport())
 
 ## src/workbuddy-widget.jsx
 
-SHA-256: 20437e909148dda4f7ab1473d01696210f97836ac76c8112193b2c630d585191
+SHA-256: cf762eddf7c809b4ca07e361d25a1f92924f13c6448dae774cedf375be34d4ad
 
 ~~~~~~text
 import React, { useEffect, useRef, useState } from 'react'
@@ -9867,6 +10387,9 @@ import { createRoot } from 'react-dom/client'
 import { App } from '@modelcontextprotocol/ext-apps'
 import { FinanceDashboard } from './finance-dashboard.jsx'
 import { composeFinanceTask } from './task-prompt.js'
+
+import { copyText } from './clipboard.js'
+import { VERSION } from './version.js'
 
 const MAX_FILES = 200
 
@@ -9880,21 +10403,9 @@ function normalizeSelectedFiles(selected) {
   }))
 }
 
-function copyText(text) {
-  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text)
-  const textarea = document.createElement('textarea')
-  textarea.value = text
-  textarea.style.position = 'fixed'
-  textarea.style.opacity = '0'
-  document.body.appendChild(textarea)
-  textarea.select()
-  document.execCommand('copy')
-  textarea.remove()
-  return Promise.resolve()
-}
-
 function WorkBuddyFinanceApp() {
   const [files, setFiles] = useState([])
+  const [references, setReferences] = useState([])
   const [status, setStatus] = useState('WorkBuddy 图形工作台已就绪 · 数据保存在本机')
   const [launching, setLaunching] = useState(false)
   const appRef = useRef(null)
@@ -9907,7 +10418,7 @@ function WorkBuddyFinanceApp() {
       return undefined
     }
     const app = new App(
-      { name: 'workbuddy-finance-workbench', version: '2.6.0' },
+      { name: 'workbuddy-finance-workbench', version: VERSION },
       {},
       { autoResize: true },
     )
@@ -9926,22 +10437,25 @@ function WorkBuddyFinanceApp() {
       setStatus('已连接 WorkBuddy · 数据保存在本机，可随时导出备份')
       try { await app.requestDisplayMode({ mode: 'fullscreen' }) } catch {}
     }).catch(() => setStatus('Widget 已打开；若功能未连接，请重新加载 WorkBuddy 会话'))
-    return () => { disposed = true; appRef.current = null }
+    return () => { disposed = true; appRef.current = null; void app.close().catch(() => {}) }
   }, [])
 
   const addFiles = selected => {
-    const incoming = normalizeSelectedFiles(selected)
+    const selection = [...selected]
+    const incoming = normalizeSelectedFiles(selection)
     setFiles(current => {
       const merged = new Map(current.map(item => [item.relative, item]))
       for (const item of incoming) merged.set(item.relative, item)
+      const capped = merged.size > MAX_FILES || selection.length > MAX_FILES
+      setStatus(`当前 Widget 已索引 ${Math.min(merged.size, MAX_FILES)} 个文件${capped ? '（上限 200 个，超出部分未索引）' : ''}；执行时请在输入框确认附件`)
       return [...merged.values()].slice(0, MAX_FILES)
     })
-    setStatus(`已在当前 Widget 索引 ${incoming.length} 个文件；执行时请在 WorkBuddy 输入框确认附件`)
   }
 
   const launchWorkflow = async workflow => {
     setLaunching(true)
-    const matched = files.length ? `\n当前 Widget 已选择：${files.slice(0, 12).map(item => item.name).join('、')}${files.length > 12 ? '等' : ''}。发送前请在 WorkBuddy 输入框核对并添加原始附件。` : '\n发送前请在 WorkBuddy 输入框添加需要处理的原始附件。'
+    const chosen = references.length ? files.filter(file => references.includes(file.relative)) : files
+    const matched = chosen.length ? `\n当前 Widget 已选择：${chosen.slice(0, 12).map(item => item.relative).join('、')}${chosen.length > 12 ? '等' : ''}。发送前请在 WorkBuddy 输入框核对并添加原始附件。` : '\n发送前请在 WorkBuddy 输入框添加需要处理的原始附件。'
     const prompt = `请使用 finance-workbench 执行「${workflow.title}」。\n\n${composeFinanceTask(workflow)}${matched}`
     try {
       if (appRef.current) {
@@ -9950,14 +10464,15 @@ function WorkBuddyFinanceApp() {
           content: [{ type: 'text', text: prompt }],
           _meta: { 'codebuddy.ai/sendMessageMode': 'fill' },
         })
-        setStatus(result?.isError ? 'WorkBuddy 未接收指令，请复制后手动粘贴' : '工作流指令已填入 WorkBuddy 输入框；核对附件后发送')
+        if (result?.isError) throw new Error('WorkBuddy 未接收指令')
+        setStatus('工作流指令已填入 WorkBuddy 输入框；核对附件后发送')
       } else {
         await copyText(prompt)
         setStatus('工作流指令已复制；请粘贴到 WorkBuddy 并添加附件')
       }
     } catch {
-      await copyText(prompt).catch(() => {})
-      setStatus('工作流指令已复制；请粘贴到 WorkBuddy 并添加附件')
+      try { await copyText(prompt); setStatus('工作流指令已复制；请粘贴到 WorkBuddy 并添加附件') }
+      catch { setStatus('指令发送和复制均未完成，请展开完整提示词后手动复制') }
     } finally {
       setLaunching(false)
     }
@@ -9977,7 +10492,7 @@ function WorkBuddyFinanceApp() {
     <FinanceDashboard
       sessionId="workbuddy-mcp-app"
       files={files}
-      workspace={{ name: 'WorkBuddy 当前对话', path: 'Widget 只建立文件索引；原件仍由你在对话附件中确认' }}
+      workspace={{ name: 'WorkBuddy 当前对话', mode: 'index', path: 'Widget 只建立文件索引；原件仍由你在对话附件中确认' }}
       status={status}
       onStatus={setStatus}
       onRefresh={() => setStatus(`已刷新 · 当前索引 ${files.length} 个文件`)}
@@ -9985,11 +10500,11 @@ function WorkBuddyFinanceApp() {
       onChooseFiles={() => filePicker.current?.click()}
       onChooseFolder={() => folderPicker.current?.click()}
       onUploadFiles={addFiles}
-      onReferenceFile={file => setStatus(`已引用 ${file.name}；启动工作流后请核对输入框附件`)}
+      onReferenceFile={file => { setReferences(current => [...new Set([...current, file.relative])]); setStatus(`已标记引用 ${file.name}；启动工作流后请核对输入框附件`) }}
       onDownloadFile={downloadFile}
       onLaunchWorkflow={launchWorkflow}
       launching={launching}
-      onClose={() => { void appRef.current?.requestDisplayMode({ mode: 'inline' }) }}
+      onClose={() => { if (appRef.current) void appRef.current.requestDisplayMode({ mode: 'inline' }).catch(() => setStatus('宿主未切回对话，请使用 WorkBuddy 返回按钮')); else setStatus('当前为独立预览；请切换回你的 AI 对话') }}
     />
     <input ref={filePicker} hidden type="file" multiple onChange={event => { addFiles(event.target.files || []); event.target.value = '' }}/>
     <input ref={folderPicker} hidden type="file" multiple webkitdirectory="" onChange={event => { addFiles(event.target.files || []); event.target.value = '' }}/>
@@ -10002,13 +10517,13 @@ createRoot(document.getElementById('root')).render(<WorkBuddyFinanceApp/>)
 
 ## src/workflow-tools.js
 
-SHA-256: 0a232ece020ce764feeb1795af9a846f1131cf8eec419f246552e7085ae131f9
+SHA-256: a29380da1cb5e6b98dfb053e56a73ca9ba0727f9299d1b0de79213ca1c54db47
 
 ~~~~~~text
 export const BRIEF_FIELDS = [
-  ['subject', '处理对象', '课程 / 班级 / 单位 / 项目'],
-  ['period', '时间范围', '学期 / 会计期间 / 截止日期'],
-  ['goal', '本次想完成什么', '例如：形成可直接使用的初稿与核对清单'],
+  ['subject', '处理对象', '单位 / 账套 / 项目'],
+  ['period', '时间范围', '会计期间 / 截止日期'],
+  ['goal', '本次想完成什么', '例如：核对银行流水，输出差异与复核清单'],
   ['requirements', '特别要求', '格式、字数、口径、输出文件和需要避开的事项'],
 ]
 export function formatTaskBrief(brief = {}) {
@@ -10080,9 +10595,54 @@ export const WORKBENCH_POLISH_CSS = `
 
 ~~~~~~
 
+## test/clipboard.test.mjs
+
+SHA-256: 210c5ca7c93a0e5fd4096cdee4acc9cb2158a9a35a87bf8f769d6146e64cd561
+
+~~~~~~text
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { copyText } from '../src/clipboard.js'
+
+function fixture(t, clipboard, copied) {
+  const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+  const originalDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
+  let removed = 0
+  const element = { style: {}, select() {}, remove() { removed++ } }
+  Object.defineProperty(globalThis, 'navigator', { value: { clipboard }, configurable: true })
+  Object.defineProperty(globalThis, 'document', { value: { createElement: () => element, body: { appendChild() {} }, execCommand: () => copied }, configurable: true })
+  t.after(() => {
+    if (originalNavigator) Object.defineProperty(globalThis, 'navigator', originalNavigator); else delete globalThis.navigator
+    if (originalDocument) Object.defineProperty(globalThis, 'document', originalDocument); else delete globalThis.document
+  })
+  return { element, removed: () => removed }
+}
+
+test('modern clipboard writes the actual prompt', async t => {
+  let text
+  fixture(t, { writeText: async value => { text = value } }, false)
+  await copyText('实际财务任务')
+  assert.equal(text, '实际财务任务')
+})
+
+test('clipboard denial falls back to selection copy and cleans up its temporary field', async t => {
+  const f = fixture(t, { writeText: async () => { throw new Error('denied') } }, true)
+  await copyText('完整提示词')
+  assert.equal(f.element.value, '完整提示词')
+  assert.equal(f.removed(), 1)
+})
+
+test('failure of both clipboard methods is reported instead of claiming success', async t => {
+  const f = fixture(t, undefined, false)
+  await assert.rejects(copyText('未复制内容'), /剪贴板不可用/)
+  assert.equal(f.removed(), 1)
+})
+
+~~~~~~
+
 ## test/finance-dashboard-helpers.test.mjs
 
-SHA-256: 2c8d5193878913045a9b469650034010e2eea8b0c18203c28692e5509b3681bc
+SHA-256: c4022f3e6af9103d8fc284ec9867fb3c06f86b77baa48a87ee5177bf82fab82a
 
 ~~~~~~text
 import test from 'node:test'
@@ -10149,6 +10709,38 @@ test('module routing exposes focused finance workflows', () => {
   assert.deepEqual(workflowsForView(workflows, 'close').map(item => item.id), ['month'])
 })
 
+test('backup validation rejects malformed rows, duplicate IDs and invalid calendar dates before restore', () => {
+  const empty = () => buildFinanceBackup({ profile: { period: '2026-10' }, settings: {}, todos: [], closeTasks: [], favorites: [], fieldDictionary: [] })
+  const todo = { id: 'todo-1', text: '核对流水', category: '对账', due: '2026-10-08', priority: '中', done: false }
+  for (const todos of [[null], [{ ...todo, due: '2026-02-30' }], [{ ...todo, done: 'false' }], [todo, todo]]) {
+    assert.throws(() => parseFinanceBackup({ ...empty(), todos }), /备份/)
+  }
+  assert.throws(() => parseFinanceBackup({ ...empty(), profile: { period: '2026-13' } }), /期间/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), auditLog: [{ id: 'a', at: 'not-a-date' }] }), /时间/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), favorites: [{}] }), /收藏/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), settings: { dateTolerance: 32 } }), /容差/)
+  assert.throws(() => parseFinanceBackup({ ...empty(), exceptions: [{ ...normalizeFinanceException({ title: '待核', due: '2026-10-08' }), status: '已关闭', evidence: '' }] }), /处置证据/)
+  const valid = { ...empty(), todos: [{ ...todo, due: '2028-02-29' }], pinnedFiles: ['财务资料/字段字典.xlsx'], recentWorkflows: ['bank-reconcile'] }
+  assert.deepEqual(parseFinanceBackup(valid).pinnedFiles, valid.pinnedFiles)
+  // Legacy v2 exports without the newly added collections stay readable.
+  delete valid.pinnedFiles; delete valid.recentWorkflows
+  assert.equal(parseFinanceBackup(valid).todos.length, 1)
+})
+
+test('cent precision, invalid dates and missing closure evidence cannot corrupt finance totals', () => {
+  assert.equal(snapshotProfit({ income: 0.3, expense: 0.2 }), 0.1)
+  assert.equal(summarizeFinanceExceptions([{ amount: 0.1 }, { amount: 0.2 }]).amount, 0.3)
+  assert.equal(normalizeTodo({ due: '2026-02-30' }, '2026-10-08').due, '2026-10-08')
+  assert.equal(normalizeFinanceSnapshot({ period: '2026-13' }, '2026-10').period, '2026-10')
+  assert.equal(normalizeFinanceException({ status: '已关闭', evidence: '' }).status, '未处理')
+})
+
+test('CSV export neutralizes formula cells while retaining ordinary Chinese text', () => {
+  const csv = financeExceptionsToCsv([{ title: '=1+1', owner: '\t=1+1', source: '@SUM(A1)', evidence: '+危险公式', category: '对账' }])
+  for (const value of ["'=1+1", "'=1+1", "'@SUM(A1)", "'+危险公式"]) assert.ok(csv.includes(value))
+  assert.ok(csv.includes('"对账"'))
+})
+
 ~~~~~~
 
 ## test/finance-data.test.mjs
@@ -10207,6 +10799,76 @@ test('each professional module has a complete process and valid workflow links',
 
 ~~~~~~
 
+## test/finance-storage.test.mjs
+
+SHA-256: d5cd92a047131277d7c138804352c7b7459902944bde0d394c2bb955a6ac6630
+
+~~~~~~text
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { buildFinanceBackup } from '../src/finance-dashboard-helpers.js'
+import { STORE_PREFIX, readFinanceStore, writeFinanceStore, storageIssueSnapshot, commitFinanceRestore } from '../src/finance-storage.js'
+
+function fixture() {
+  const map = new Map()
+  return { map, getItem: key => map.get(key) ?? null, setItem: (key, value) => map.set(key, value), removeItem: key => map.delete(key) }
+}
+
+test('blocked localStorage access leaves the dashboard usable and restore fails safely', () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, get() { throw new Error('storage blocked') } })
+  try {
+    assert.deepEqual(readFinanceStore('favorites', []), [])
+    assert.equal(writeFinanceStore('favorites', []), false)
+    assert.throws(() => commitFinanceRestore({}, {}), /无法保留恢复前副本/)
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor)
+    else delete globalThis.localStorage
+    writeFinanceStore('favorites', [], fixture())
+  }
+})
+
+test('corrupt local state is preserved and storage denial is visible to the user', () => {
+  const store = fixture()
+  store.setItem(`${STORE_PREFIX}todos`, '{broken')
+  assert.deepEqual(readFinanceStore('todos', [], store), [])
+  assert.equal(store.getItem(`${STORE_PREFIX}todos`), '{broken')
+  assert.match(storageIssueSnapshot(), /原存储已保留/)
+  assert.equal(writeFinanceStore('todos', [], { setItem() { throw new Error('quota') } }), false)
+  assert.match(storageIssueSnapshot(), /保存未完成/)
+  assert.equal(writeFinanceStore('todos', [], store), true)
+  assert.equal(storageIssueSnapshot(), '')
+})
+
+test('restore keeps a complete rollback copy including pins and recent workflows', () => {
+  const store = fixture()
+  const current = buildFinanceBackup({ profile: { name: '原主体' }, settings: {}, todos: [], closeTasks: [], favorites: [], fieldDictionary: [], pinnedFiles: ['原资料.xlsx'], recentWorkflows: ['bank-reconcile'] })
+  const restored = { ...current, profile: { name: '新主体' }, pinnedFiles: ['新资料.xlsx'] }
+  commitFinanceRestore(current, restored, store)
+  assert.deepEqual(JSON.parse(store.getItem(`${STORE_PREFIX}beforeRestore`)), current)
+  assert.deepEqual(JSON.parse(store.getItem(`${STORE_PREFIX}pinnedFiles`)), ['新资料.xlsx'])
+  assert.deepEqual(JSON.parse(store.getItem(`${STORE_PREFIX}recentWorkflows`)), ['bank-reconcile'])
+})
+
+test('partial restore write failure rolls back every already changed storage key', () => {
+  const store = fixture()
+  const original = JSON.stringify({ name: '原主体' })
+  store.setItem(`${STORE_PREFIX}profile`, original)
+  const realSet = store.setItem
+  let failing = true
+  store.setItem = (key, value) => {
+    if (key === `${STORE_PREFIX}closeTasks` && failing) { failing = false; throw new Error('quota') }
+    realSet(key, value)
+  }
+  const current = buildFinanceBackup({ profile: { name: '原主体' }, settings: {}, todos: [], closeTasks: [], favorites: [], fieldDictionary: [] })
+  assert.throws(() => commitFinanceRestore(current, { ...current, profile: { name: '新主体' } }, store), /原数据已保留/)
+  assert.equal(store.getItem(`${STORE_PREFIX}profile`), original)
+  assert.equal(store.getItem(`${STORE_PREFIX}todos`), null)
+  assert.deepEqual(JSON.parse(store.getItem(`${STORE_PREFIX}beforeRestore`)), current)
+})
+
+~~~~~~
+
 ## test/helpers.test.mjs
 
 SHA-256: a72d672bcb54ca8529610cbd0b9e5160ad576b9c1055c21a83432b5cc3d8478b
@@ -10249,9 +10911,83 @@ test('safeWorkflowId only accepts deterministic internal names', () => {
 
 ~~~~~~
 
+## test/installers.test.mjs
+
+SHA-256: 3b68ebf7d074f3c83e7f5ba1ba05de5da6a107d3c7d76b72ca53ffc3596f0922
+
+~~~~~~text
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { mkdtemp, mkdir, readFile, writeFile, readdir, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+const run = promisify(execFile)
+const script = fileURLToPath(new URL('../scripts/workbuddy-install.mjs', import.meta.url))
+
+async function fixture(t) {
+  const home = await mkdtemp(join(tmpdir(), 'installer-test-'))
+  t.after(() => rm(home, { recursive: true, force: true }))
+  const app = join(home, 'apps', 'finance-workbench'), skill = join(home, 'skills', 'finance-workbench')
+  for (const directory of [app, skill]) { await mkdir(directory, { recursive: true }); await writeFile(join(directory, 'user-note.txt'), '用户原资料') }
+  const execute = (...args) => run(process.execPath, [script, ...args], { env: { ...process.env, WORKBUDDY_HOME: home } })
+  return { home, app, skill, config: join(home, '.mcp.json'), execute }
+}
+
+test('malformed config aborts both installation and removal without changing user data', async t => {
+  const f = await fixture(t)
+  for (const config of ['{broken', '[]', '{"mcpServers":[]}']) {
+    await writeFile(f.config, config)
+    for (const action of ['install', 'uninstall']) {
+      await assert.rejects(f.execute(action), /配置/)
+      assert.equal(await readFile(f.config, 'utf8'), config)
+      for (const directory of [f.app, f.skill]) assert.equal(await readFile(join(directory, 'user-note.txt'), 'utf8'), '用户原资料')
+    }
+  }
+})
+
+test('updates preserve unrelated config, custom finance settings and distinct recoverable backups', async t => {
+  const f = await fixture(t)
+  const config = { marker: 'keep', mcpServers: { other: { command: 'fixture' }, 'finance-workbench': { disabled: false, env: { USER_SETTING: 'keep' } } } }
+  await writeFile(f.config, '\uFEFF' + JSON.stringify(config))
+  await f.execute('install', '--dry-run')
+  assert.equal(await readFile(join(f.app, 'user-note.txt'), 'utf8'), '用户原资料')
+  await f.execute('install')
+  await f.execute('install')
+  const installed = JSON.parse(await readFile(f.config, 'utf8'))
+  assert.equal(installed.marker, 'keep')
+  assert.deepEqual(installed.mcpServers.other, config.mcpServers.other)
+  assert.equal(installed.mcpServers['finance-workbench'].env.USER_SETTING, 'keep')
+  const backups = (await readdir(join(f.home, 'apps'))).filter(name => name.startsWith('finance-workbench.backup-'))
+  assert.equal(backups.length, 2)
+  const retained = await Promise.all(backups.map(name => readFile(join(f.home, 'apps', name, 'user-note.txt'), 'utf8').catch(() => '')))
+  assert.ok(retained.includes('用户原资料'))
+  await f.execute('uninstall')
+  const removed = JSON.parse(await readFile(f.config, 'utf8'))
+  assert.equal(removed.mcpServers['finance-workbench'], undefined)
+  assert.deepEqual(removed.mcpServers.other, config.mcpServers.other)
+  assert.ok((await readdir(join(f.home, 'apps'))).some(name => name.startsWith('finance-workbench.uninstalled-')))
+})
+
+test('native Shell or PowerShell wrapper invokes the shared installer and propagates failure', async t => {
+  const f = await fixture(t)
+  const windows = process.platform === 'win32'
+  const wrapper = fileURLToPath(new URL(`../scripts/install-workbuddy-app.${windows ? 'ps1' : 'sh'}`, import.meta.url))
+  const command = windows ? 'powershell.exe' : 'bash'
+  const args = windows ? ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', wrapper, '-DryRun'] : [wrapper, '--dry-run']
+  const env = { ...process.env, WORKBUDDY_HOME: f.home }
+  assert.match((await run(command, args, { env })).stdout, /预检通过/)
+  await writeFile(f.config, '{broken')
+  await assert.rejects(run(command, args, { env }))
+})
+
+~~~~~~
+
 ## test/public-release.test.mjs
 
-SHA-256: 27066ffc34513d01f4e52c0b421c34ad31d0bf4bd96cd149585bd4dc0a2a50ba
+SHA-256: f9765fabdd8c08e2577a0c5ba859d67aa00bec7c342075e5043e33ec6a3e7f39
 
 ~~~~~~text
 import test from 'node:test'
@@ -10280,7 +11016,7 @@ test('public package contains beginner docs and agent artifacts', async () => {
   await Promise.all(files.map(file => access(new URL(`../${file}`, import.meta.url))))
   const catalog = JSON.parse(await readFile(new URL('../agents/finance-workbench/references/workflows.json', import.meta.url), 'utf8'))
   assert.equal(catalog.workflows.length, 25)
-  assert.equal(catalog.productVersion, '2.6.0')
+  assert.equal(catalog.productVersion, JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version)
   const promptFiles = (await readdir(new URL('../agents/finance-workbench/references/prompts/', import.meta.url))).filter(file => /^\d{2}-.+\.md$/.test(file))
   assert.equal(promptFiles.length, 25)
   for (const workflow of catalog.workflows) {
@@ -10307,6 +11043,20 @@ test('public defaults use generic demonstration identity', async () => {
   assert.match(dashboard, /canCloseFinanceException/)
   assert.match(prompt, /你是用户的财务执行助理/)
   assert.doesNotMatch(`${dashboard}\n${prompt}`, new RegExp(['永', '模'].join('')))
+})
+
+test('package, lock, MCP App, plugin metadata and Skill share the same version', async () => {
+  const read = file => readFile(new URL(`../${file}`, import.meta.url), 'utf8')
+  const pkg = JSON.parse(await read('package.json'))
+  const lock = JSON.parse(await read('package-lock.json'))
+  const plugin = JSON.parse(await read('.codebuddy-plugin/plugin.json'))
+  const { VERSION } = await import('../src/version.js')
+  assert.equal(lock.version, pkg.version)
+  assert.equal(lock.packages[''].version, pkg.version)
+  assert.equal(plugin.version, pkg.version)
+  assert.equal(VERSION, pkg.version)
+  assert.ok((await read('agents/finance-workbench/SKILL.md')).includes(`version: "${pkg.version}"`))
+  for (const file of ['scripts/workbuddy-install.mjs', 'scripts/uninstall-workbuddy-app.sh', 'scripts/uninstall-workbuddy-app.ps1']) assert.ok(pkg.files.includes(file))
 })
 
 ~~~~~~
@@ -10437,12 +11187,12 @@ test('matchScenarioFiles prefers filename relevance and limits noise', () => {
 
 ## test/upload.test.mjs
 
-SHA-256: b81527c83704f7b86d4f592bc97080be4ad5d16ae4b86a211047011fdb44c146
+SHA-256: 14d7189c57fc5ca8a25f11dbce025b83e31cf2f10b8caf62ec4bd537feb43490
 
 ~~~~~~text
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, readdir, rm, writeFile, mkdir } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir, rm, writeFile, mkdir, rename, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { FinanceFilesService } from '../src/index.js'
@@ -10507,11 +11257,46 @@ test('empty files can be uploaded', async t => {
   assert.equal((await f.finish(await f.begin('empty.txt', ''))).size, 0)
 })
 
+test('upload and task writes reject directory symlinks, including changes after upload begins', async t => {
+  const f = await fixture(t)
+  const outside = await mkdtemp(join(tmpdir(), 'outside-test-'))
+  t.after(() => rm(outside, { recursive: true, force: true }))
+  const link = (target, path) => symlink(target, path, process.platform === 'win32' ? 'junction' : 'dir')
+  await link(outside, join(f.root, '财务资料'))
+  await assert.rejects(f.begin('资料.txt', 'new'), /符号链接/)
+  assert.deepEqual(await readdir(outside), [])
+  await rm(join(f.root, '财务资料'), { recursive: true, force: true })
+  const u = await f.begin('资料.txt', 'new')
+  await f.chunk(u, 'new')
+  await rename(join(f.root, '财务资料'), join(f.root, '原财务资料'))
+  await link(outside, join(f.root, '财务资料'))
+  await assert.rejects(f.finish(u), /符号链接/)
+  assert.deepEqual(await readdir(outside), [])
+  await link(outside, join(f.root, '财务工作台'))
+  await assert.rejects(f.service.prepareTask(f.agent, { id: 'bank-reconcile', title: '对账', content: '核对样本' }), /符号链接/)
+  assert.deepEqual(await readdir(outside), [])
+})
+
+test('invalid chunks, cross-workspace IDs, traversal and download offsets are rejected', async t => {
+  const f = await fixture(t)
+  const u = await f.begin('资料.txt', 'new')
+  for (const data of ['%%%=', 'a', 'bmV3===', 'bmV3\n']) await assert.rejects(f.service.uploadChunk(f.agent, { uploadId: u.uploadId, offset: 0, data }), /编码无效/)
+  const other = await fixture(t)
+  await assert.rejects(f.service.finishUpload(other.agent, { uploadId: u.uploadId }), /已失效/)
+  await f.chunk(u, 'new')
+  const result = await f.finish(u)
+  const downloaded = await f.service.downloadChunk(f.agent, { relative: result.relative, offset: 0, length: 100 })
+  assert.equal(Buffer.from(downloaded.data, 'base64').toString(), 'new')
+  await assert.rejects(f.service.downloadChunk(f.agent, { relative: '../outside.txt', offset: 0, length: 1 }), /超出/)
+  await assert.rejects(f.service.downloadChunk(f.agent, { relative: result.relative, offset: -1, length: 1 }), /偏移/)
+  await assert.rejects(f.service.downloadChunk(f.agent, { relative: result.relative, offset: 0, length: 0 }), /长度/)
+})
+
 ~~~~~~
 
 ## test/workbuddy-app.test.mjs
 
-SHA-256: 3f7c8b5080e1682c208c1df2a0e59f52184aff7a9a1aebf47c451d7e462adc19
+SHA-256: b66289cad12b4b57a274e8e7774d0b29eea66e24a5c422ff1d834673f9a261da
 
 ~~~~~~text
 import test from 'node:test'
@@ -10556,7 +11341,7 @@ test('WorkBuddy MCP server exposes and serves the interactive dashboard', async 
     const resource = await client.readResource({ uri: 'ui://workbuddy-finance-workbench/dashboard' })
     assert.ok(resource.contents[0].text.length > 100000)
     const result = await client.callTool({ name: 'show_finance_workbench', arguments: {} })
-    assert.equal(result.structuredContent.version, '2.6.0')
+    assert.equal(result.structuredContent.version, JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version)
     assert.equal(result.structuredContent.modules, 20)
     assert.equal(result.structuredContent.workflows, 25)
     assert.equal(result.structuredContent.prompts, 25)

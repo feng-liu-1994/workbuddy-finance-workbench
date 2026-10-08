@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { constants } from 'node:fs'
 import { execFile } from 'node:child_process'
-import { appendFile, copyFile, mkdir, open, opendir, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises'
+import { copyFile, lstat, mkdir, open, opendir, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { promisify } from 'node:util'
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
@@ -72,6 +72,28 @@ async function workspaceRoot(agent) {
   return realpath(cwd)
 }
 
+async function checkedDirectory(root, directory, create = false) {
+  if (!isInside(root, directory)) throw new Error('路径超出当前工作区')
+  let current = root
+  for (const segment of relative(root, directory).split(sep).filter(Boolean)) {
+    current = join(current, segment)
+    if (create) {
+      try { await mkdir(current) } catch (error) { if (error?.code !== 'EEXIST') throw error }
+    }
+    const info = await lstat(current)
+    if (info.isSymbolicLink() || !info.isDirectory()) throw new Error('目标目录包含符号链接或不是普通目录')
+    if (!isInside(root, await realpath(current))) throw new Error('目录指向工作区之外')
+  }
+  return directory
+}
+
+async function checkedUpload(upload) {
+  await checkedDirectory(upload.root, dirname(upload.temp))
+  const info = await lstat(upload.temp)
+  if (info.isSymbolicLink() || !info.isFile()) throw new Error('上传临时文件无效')
+  await checkedDirectory(upload.root, dirname(upload.destination))
+}
+
 async function publishUpload(temp, directory, name) {
   const dot = name.lastIndexOf('.')
   const stem = dot > 0 ? name.slice(0, dot) : name
@@ -110,23 +132,24 @@ export class FinanceFilesService extends TypertRemoteService {
   purgeExpired() {
     const deadline = Date.now() - 15 * 60 * 1000
     for (const [id, upload] of this.uploads) {
-      if (upload.createdAt >= deadline) continue
+      if (upload.busy || (upload.updatedAt || upload.createdAt) >= deadline) continue
       this.uploads.delete(id)
-      void unlink(upload.temp).catch(() => {})
+      void checkedUpload(upload).then(() => unlink(upload.temp)).catch(() => {})
     }
   }
 
   async beginUpload(agent, request) {
     this.purgeExpired()
+    if (this.uploads.size >= 32) throw new Error('未完成上传过多，请稍后重试')
     const root = await workspaceRoot(agent)
     const relativeName = safeUploadRelativePath(request.relativePath, request.name)
     if (!Number.isSafeInteger(request.size) || request.size < 0) throw new Error('文件大小无效')
     if (request.size > MAX_FILE_BYTES) throw new Error('单个文件不能超过 50 MB')
     const uploadDirectory = join(root, '财务资料')
-    await mkdir(uploadDirectory, { recursive: true })
+    await checkedDirectory(root, uploadDirectory, true)
     const requestedDestination = resolve(uploadDirectory, relativeName)
     if (!isInside(uploadDirectory, requestedDestination)) throw new Error('上传路径超出财务资料目录')
-    await mkdir(dirname(requestedDestination), { recursive: true })
+    await checkedDirectory(root, dirname(requestedDestination), true)
     const destination = requestedDestination
     const uploadId = randomUUID()
     const temp = join(uploadDirectory, `.dsh-finance-upload-${uploadId}.part`)
@@ -138,18 +161,25 @@ export class FinanceFilesService extends TypertRemoteService {
   }
 
   async uploadChunk(agent, request) {
+    this.purgeExpired()
     const root = await workspaceRoot(agent)
     const upload = this.uploads.get(request.uploadId)
     if (!upload || upload.root !== root) throw new Error('上传任务已失效，请重新选择文件')
     if (upload.busy) throw new Error('上传任务正忙，请稍候重试')
+    if (!Number.isSafeInteger(request.offset) || request.offset < 0) throw new Error('上传偏移无效')
     if (request.offset !== upload.received) throw new Error('上传分块顺序不正确')
+    if (typeof request.data !== 'string' || request.data.length > Math.ceil(CHUNK_BYTES / 3) * 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(request.data) || request.data.length % 4 !== 0) throw new Error('上传分块编码无效')
     const bytes = Buffer.from(request.data, 'base64')
+    if (bytes.toString('base64') !== request.data) throw new Error('上传分块编码无效')
     if (bytes.length > CHUNK_BYTES) throw new Error('上传分块过大')
     if (upload.received + bytes.length > upload.size || upload.received + bytes.length > MAX_FILE_BYTES) throw new Error('上传大小与声明不一致')
     upload.busy = true
     try {
-      await appendFile(upload.temp, bytes)
+      await checkedUpload(upload)
+      const handle = await open(upload.temp, constants.O_WRONLY | constants.O_APPEND | (constants.O_NOFOLLOW || 0))
+      try { await handle.writeFile(bytes) } finally { await handle.close() }
       upload.received += bytes.length
+      upload.updatedAt = Date.now()
       return { received: upload.received }
     } finally {
       upload.busy = false
@@ -157,6 +187,7 @@ export class FinanceFilesService extends TypertRemoteService {
   }
 
   async finishUpload(agent, request) {
+    this.purgeExpired()
     const root = await workspaceRoot(agent)
     const upload = this.uploads.get(request.uploadId)
     if (!upload || upload.root !== root) throw new Error('上传任务已失效，请重新选择文件')
@@ -164,6 +195,7 @@ export class FinanceFilesService extends TypertRemoteService {
     if (upload.received !== upload.size) throw new Error(`文件尚未上传完整：${upload.received}/${upload.size}`)
     upload.busy = true
     try {
+      await checkedUpload(upload)
       const destination = await publishUpload(upload.temp, dirname(upload.destination), basename(upload.destination))
       this.uploads.delete(request.uploadId)
       // Cleanup failure must not turn a successful upload into a retry/duplicate.
@@ -213,11 +245,12 @@ export class FinanceFilesService extends TypertRemoteService {
   }
 
   async downloadChunk(agent, request) {
+    if (!Number.isSafeInteger(request.offset) || request.offset < 0 || !Number.isSafeInteger(request.length) || request.length < 1) throw new Error('下载偏移或长度无效')
     const root = await workspaceRoot(agent)
     const { actual, info } = await resolvedWorkspaceFile(root, request.relative)
     const start = Math.min(request.offset, info.size)
     const length = Math.min(request.length, CHUNK_BYTES, info.size - start)
-    const handle = await open(actual, 'r')
+    const handle = await open(actual, constants.O_RDONLY | (constants.O_NOFOLLOW || 0))
     try {
       const buffer = Buffer.alloc(length)
       const { bytesRead } = await handle.read(buffer, 0, length, start)
@@ -252,7 +285,7 @@ export class FinanceFilesService extends TypertRemoteService {
     const directory = join(root, '财务工作台', '内置工作流')
     const destination = join(directory, workflowSnapshotName(id))
     if (!isInside(root, destination)) throw new Error('工作流路径超出当前工作区')
-    await mkdir(directory, { recursive: true })
+    await checkedDirectory(root, directory, true)
     const temp = join(directory, `.${id}-${randomUUID()}.tmp`)
     const content = `# ${request.title}\n\n${request.content.trim()}\n`
     await writeFile(temp, content, { encoding: 'utf8', mode: 0o600 })

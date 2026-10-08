@@ -23,7 +23,7 @@ New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
 $Destination = Join-Path $DestinationRoot "finance-workbench"
 
 if (Test-Path $Destination) {
-  $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+  $Timestamp = (Get-Date -Format "yyyyMMdd-HHmmss") + "-" + [guid]::NewGuid().ToString("N").Substring(0, 8)
   $Backup = Join-Path $DestinationRoot "finance-workbench.backup-$Timestamp"
   Move-Item $Destination $Backup
   Write-Host "旧版已备份到: $Backup"

@@ -40,7 +40,7 @@ test('WorkBuddy MCP server exposes and serves the interactive dashboard', async 
     const resource = await client.readResource({ uri: 'ui://workbuddy-finance-workbench/dashboard' })
     assert.ok(resource.contents[0].text.length > 100000)
     const result = await client.callTool({ name: 'show_finance_workbench', arguments: {} })
-    assert.equal(result.structuredContent.version, '2.6.0')
+    assert.equal(result.structuredContent.version, JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version)
     assert.equal(result.structuredContent.modules, 20)
     assert.equal(result.structuredContent.workflows, 25)
     assert.equal(result.structuredContent.prompts, 25)

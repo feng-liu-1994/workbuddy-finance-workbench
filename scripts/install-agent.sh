@@ -32,7 +32,7 @@ fi
 mkdir -p "$destination_root"
 destination="$destination_root/finance-workbench"
 if [[ -e "$destination" ]]; then
-  timestamp="$(date +%Y%m%d-%H%M%S)"
+  timestamp="$(date +%Y%m%d-%H%M%S)-$$-$RANDOM"
   backup="$destination_root/finance-workbench.backup-$timestamp"
   mv "$destination" "$backup"
   echo "旧版已备份到: $backup"

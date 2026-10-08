@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { FINANCE_WORKFLOWS, SOP_STEPS } from '../src/finance-data.js'
 import { composeFinanceTask } from '../src/task-prompt.js'
 
@@ -7,11 +7,12 @@ const promptRoot = new URL('./prompts/', root)
 await mkdir(root, { recursive: true })
 await mkdir(promptRoot, { recursive: true })
 
+const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
 const catalog = {
   product: 'workbuddy-finance-workbench',
   version: 2,
-  productVersion: '2.6.0',
-  generatedAt: '2026-08-24',
+  productVersion: pkg.version,
+  generatedAt: pkg.releaseDate,
   sopSteps: SOP_STEPS.map(([number, title, note]) => ({ number, title, note })),
   workflows: FINANCE_WORKFLOWS,
 }

@@ -22,7 +22,7 @@ if [[ ! -e "$destination" ]]; then
   exit 0
 fi
 
-timestamp="$(date +%Y%m%d-%H%M%S)"
+timestamp="$(date +%Y%m%d-%H%M%S)-$$-$RANDOM"
 backup="$destination_root/finance-workbench.uninstalled-$timestamp"
 mv "$destination" "$backup"
 echo "已从技能目录移出，保留在: $backup"
